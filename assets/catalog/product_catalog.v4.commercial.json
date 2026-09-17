@@ -1,0 +1,3151 @@
+{
+  "catalogVersion": "4.0.0",
+  "categories": [
+    {
+      "categoryId": "milk_tea",
+      "name": "Milk Tea",
+      "subtitle": "Milk tea and milk-based drinks",
+      "active": true
+    },
+    {
+      "categoryId": "fruit_tea",
+      "name": "Fruit Tea",
+      "subtitle": "Fruit tea drinks",
+      "active": true
+    },
+    {
+      "categoryId": "coffee",
+      "name": "Coffee",
+      "subtitle": "Coffee and espresso drinks",
+      "active": true
+    },
+    {
+      "categoryId": "chocolate",
+      "name": "Chocolate",
+      "subtitle": "Chocolate drinks",
+      "active": true
+    },
+    {
+      "categoryId": "matcha",
+      "name": "Matcha",
+      "subtitle": "Matcha drinks",
+      "active": true
+    },
+    {
+      "categoryId": "frappe",
+      "name": "Frappe",
+      "subtitle": "Blended frappe drinks",
+      "active": true
+    },
+    {
+      "categoryId": "fruity_soda",
+      "name": "Fruity Soda",
+      "subtitle": "Fruit soda drinks",
+      "active": true
+    },
+    {
+      "categoryId": "slushies",
+      "name": "Slushies",
+      "subtitle": "Slushie drinks",
+      "active": true
+    },
+    {
+      "categoryId": "rice_meals",
+      "name": "Rice Meals",
+      "subtitle": "Rice meals",
+      "active": true
+    },
+    {
+      "categoryId": "burgers",
+      "name": "Burgers",
+      "subtitle": "Burgers and burger meals",
+      "active": true
+    },
+    {
+      "categoryId": "merienda",
+      "name": "Merienda",
+      "subtitle": "Merienda and snacks",
+      "active": true
+    },
+    {
+      "categoryId": "accessories",
+      "name": "Accessories",
+      "subtitle": "Other products and accessories",
+      "active": true
+    },
+    {
+      "categoryId": "add_ons",
+      "name": "Add-ons",
+      "subtitle": "Optional add-ons",
+      "active": true
+    }
+  ],
+  "sizeDefinitions": [
+    {
+      "sizeId": "regular",
+      "name": "Regular",
+      "volumeMl": 355,
+      "displayVolume": "12oz",
+      "price": null
+    },
+    {
+      "sizeId": "go_big",
+      "name": "Go Big",
+      "volumeMl": 650,
+      "displayVolume": "22oz",
+      "price": null
+    },
+    {
+      "sizeId": "go_bigger",
+      "name": "Go Bigger",
+      "volumeMl": 1000,
+      "displayVolume": "1 Liter",
+      "price": null
+    }
+  ],
+  "variantDefinition": {
+    "fields": [
+      "variantId",
+      "name",
+      "price",
+      "active"
+    ],
+    "example": {
+      "variantId": "example_variant",
+      "name": "Example Variant",
+      "price": null,
+      "active": true
+    }
+  },
+  "optionDefinitions": [
+    {
+      "optionId": "extra_rice",
+      "name": "Extra Rice",
+      "productTypes": [
+        "food"
+      ],
+      "price": 20,
+      "active": true,
+      "kitchenPrepared": true
+    },
+    {
+      "optionId": "garlic_mayo",
+      "name": "Garlic Mayo Dip",
+      "productTypes": [
+        "food"
+      ],
+      "price": 10,
+      "active": true,
+      "kitchenPrepared": true
+    },
+    {
+      "optionId": "egg",
+      "name": "Egg",
+      "productTypes": [
+        "food"
+      ],
+      "price": 15,
+      "active": true,
+      "kitchenPrepared": true
+    },
+    {
+      "optionId": "pearl",
+      "name": "Pearl",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 10,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "nata",
+      "name": "Nata",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 15,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "coffee_jelly",
+      "name": "Coffee Jelly",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 15,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "espresso_shot",
+      "name": "Espresso Shot",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 20,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "crushed_oreo",
+      "name": "Crushed Oreo",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 20,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "fruit_syrup",
+      "name": "Fruit Syrup",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 20,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "creampuff",
+      "name": "Creampuff",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 20,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "coffee_syrup",
+      "name": "Coffee Syrup",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 25,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "whipcream",
+      "name": "Whipcream",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 30,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "oat_milk",
+      "name": "Oat Milk",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 40,
+      "active": true,
+      "kitchenPrepared": false
+    },
+    {
+      "optionId": "non_fat_milk",
+      "name": "Non Fat Milk",
+      "productTypes": [
+        "drink"
+      ],
+      "price": 40,
+      "active": true,
+      "kitchenPrepared": false
+    }
+  ],
+  "products": [
+    {
+      "productId": "classic_milktea",
+      "name": "Classic Milktea",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/classic_milktea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "dark_chocolate",
+      "name": "Dark Chocolate",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/dark_chocolate",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "chocolate",
+      "name": "Chocolate",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/chocolate",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "okinawa",
+      "name": "Okinawa",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/okinawa",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "cheesecake",
+      "name": "Cheesecake",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/cheesecake",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "cookies_cream",
+      "name": "Cookies & Cream",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/cookies_cream",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "salted_caramel",
+      "name": "Salted Caramel",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/salted_caramel",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "wintermelon",
+      "name": "Wintermelon",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/wintermelon",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "javachip",
+      "name": "Javachip",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/javachip",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 29
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 69
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "taro",
+      "name": "Taro",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/taro",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 79
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "strawberry",
+      "name": "Strawberry",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/strawberry",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 79
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha",
+      "name": "Matcha",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "afforda_milktea",
+      "groupName": "Afforda Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_milktea/matcha",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 79
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "biscoff_milktea",
+      "name": "Biscoff Milktea",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "signature_milktea",
+      "groupName": "Signature Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_milktea/biscoff_milktea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 89
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "choco_butternut_donut",
+      "name": "Choco Butternut Donut",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "signature_milktea",
+      "groupName": "Signature Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_milktea/choco_butternut_donut",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_green_tea_boba",
+      "name": "Matcha Green Tea Boba",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "signature_milktea",
+      "groupName": "Signature Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_milktea/matcha_green_tea_boba",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "brown_sugar_boba",
+      "name": "Brown Sugar Boba",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "signature_milktea",
+      "groupName": "Signature Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_milktea/brown_sugar_boba",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "milo_boba",
+      "name": "Milo Boba",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "signature_milktea",
+      "groupName": "Signature Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_milktea/milo_boba",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 129
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "choco_oreo_boba",
+      "name": "Choco Oreo Boba",
+      "productType": "drink",
+      "categoryId": "milk_tea",
+      "groupId": "signature_milktea",
+      "groupName": "Signature Milktea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_milktea/choco_oreo_boba",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 129
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_black_coffee",
+      "name": "Hot Black Coffee",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_black_coffee",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 39
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_latte",
+      "name": "Hot Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_vanilla_latte",
+      "name": "Hot Vanilla Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_vanilla_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_hazelnut_latte",
+      "name": "Hot Hazelnut Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_hazelnut_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_caramel_macchiato",
+      "name": "Hot Caramel Macchiato",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_caramel_macchiato",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_spanish_latte",
+      "name": "Hot Spanish Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_spanish_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_matcha",
+      "name": "Hot Matcha",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/hot_matcha",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hot_chocolate",
+      "name": "Chocolate",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "hot_coffee",
+      "groupName": "Hot Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "hot_coffee/chocolate",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_americano",
+      "name": "Iced Americano",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_americano",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 39
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 79
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_coffee_latte",
+      "name": "Iced Coffee Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_coffee_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 89
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_spanish_latte",
+      "name": "Iced Spanish Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_spanish_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 99
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_salted_caramel_latte",
+      "name": "Iced Salted Caramel Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_salted_caramel_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 99
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_cheesecake_coffee",
+      "name": "Iced Cheesecake Coffee",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_cheesecake_coffee",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 99
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_matcha_latte",
+      "name": "Iced Matcha Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_matcha_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 99
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_dark_chocolate_latte",
+      "name": "Iced Dark Chocolate Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "afforda_coffee",
+      "groupName": "Afforda Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "afforda_coffee/iced_dark_chocolate_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 99
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_peach_americano",
+      "name": "Iced Peach Americano",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_peach_americano",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_matcha_cream_puff",
+      "name": "Iced Matcha Cream Puff",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_matcha_cream_puff",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 129
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_butter_caramel",
+      "name": "Iced Butter Caramel",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_butter_caramel",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 109
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 139
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_hazelnut_mocha",
+      "name": "Iced Hazelnut Mocha",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_hazelnut_mocha",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 109
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 139
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_brown_sugar_latte",
+      "name": "Iced Brown Sugar Latte",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_brown_sugar_latte",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 109
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 139
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_caramel_macchiato",
+      "name": "Iced Caramel Macchiato",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_caramel_macchiato",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 109
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 139
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "iced_french_vanilla",
+      "name": "Iced French Vanilla",
+      "productType": "drink",
+      "categoryId": "coffee",
+      "groupId": "signature_coffee",
+      "groupName": "Signature Coffee",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "signature_coffee/iced_french_vanilla",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 99
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 129
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_oreo_frappe",
+      "name": "Matcha Oreo Frappe",
+      "productType": "drink",
+      "categoryId": "matcha",
+      "groupId": "matcha_series",
+      "groupName": "Matcha Series",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "matcha_series/matcha_oreo_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_pure_frappe",
+      "name": "Matcha Pure Frappe",
+      "productType": "drink",
+      "categoryId": "matcha",
+      "groupId": "matcha_series",
+      "groupName": "Matcha Series",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "matcha_series/matcha_pure_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_pistachio",
+      "name": "Matcha Pistachio",
+      "productType": "drink",
+      "categoryId": "matcha",
+      "groupId": "matcha_series",
+      "groupName": "Matcha Series",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "matcha_series/matcha_pistachio",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_greentea",
+      "name": "Matcha Greentea",
+      "productType": "drink",
+      "categoryId": "matcha",
+      "groupId": "matcha_series",
+      "groupName": "Matcha Series",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "matcha_series/matcha_greentea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_strawberry",
+      "name": "Matcha Strawberry",
+      "productType": "drink",
+      "categoryId": "matcha",
+      "groupId": "matcha_series",
+      "groupName": "Matcha Series",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "matcha_series/matcha_strawberry",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 89
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 119
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "javachip_frappe",
+      "name": "Javachip Frappe",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/javachip_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "dark_mocha_frappe",
+      "name": "Dark Mocha Frappe",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/dark_mocha_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "caramel_coffee_frappe",
+      "name": "Caramel Coffee Frappe",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/caramel_coffee_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "strawberry_frappe",
+      "name": "Strawberry Frappe",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/strawberry_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "cookies_cream_frappe",
+      "name": "Cookies & Cream Frappe",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/cookies_cream_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "matcha_frappe",
+      "name": "Matcha Frappe",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/matcha_frappe",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "cookie_crumble",
+      "name": "Cookie Crumble",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/cookie_crumble",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "coffee_jelly",
+      "name": "Coffee Jelly",
+      "productType": "drink",
+      "categoryId": "frappe",
+      "groupId": "frappe_selections",
+      "groupName": "Frappe Selections",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "frappe/coffee_jelly",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "lychee_fruitea",
+      "name": "Lychee Fruitea",
+      "productType": "drink",
+      "categoryId": "fruit_tea",
+      "groupId": "fruitea",
+      "groupName": "Fruitea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruitea/lychee_fruitea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 89
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "strawberry_fruitea",
+      "name": "Strawberry Fruitea",
+      "productType": "drink",
+      "categoryId": "fruit_tea",
+      "groupId": "fruitea",
+      "groupName": "Fruitea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruitea/strawberry_fruitea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 89
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "green_apple_fruitea",
+      "name": "Green Apple Fruitea",
+      "productType": "drink",
+      "categoryId": "fruit_tea",
+      "groupId": "fruitea",
+      "groupName": "Fruitea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruitea/green_apple_fruitea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 89
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "blueberry_fruitea",
+      "name": "Blueberry Fruitea",
+      "productType": "drink",
+      "categoryId": "fruit_tea",
+      "groupId": "fruitea",
+      "groupName": "Fruitea",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruitea/blueberry_fruitea",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 49
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 59
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 89
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "lychee_soda",
+      "name": "Lychee Soda",
+      "productType": "drink",
+      "categoryId": "fruity_soda",
+      "groupId": "fruity_soda",
+      "groupName": "Fruity Soda",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruity_soda/lychee_soda",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "strawberry_soda",
+      "name": "Strawberry Soda",
+      "productType": "drink",
+      "categoryId": "fruity_soda",
+      "groupId": "fruity_soda",
+      "groupName": "Fruity Soda",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruity_soda/strawberry_soda",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "green_apple_soda",
+      "name": "Green Apple Soda",
+      "productType": "drink",
+      "categoryId": "fruity_soda",
+      "groupId": "fruity_soda",
+      "groupName": "Fruity Soda",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruity_soda/green_apple_soda",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "blueberry_soda",
+      "name": "Blueberry Soda",
+      "productType": "drink",
+      "categoryId": "fruity_soda",
+      "groupId": "fruity_soda",
+      "groupName": "Fruity Soda",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "fruity_soda/blueberry_soda",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": 69
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": 79
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": 109
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "green_apple_slushies",
+      "name": "Green Apple Slushies",
+      "productType": "drink",
+      "categoryId": "slushies",
+      "groupId": "slushies",
+      "groupName": "Slushies",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "slushies/green_apple_slushies",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": null
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "strawberry_slushies",
+      "name": "Strawberry Slushies",
+      "productType": "drink",
+      "categoryId": "slushies",
+      "groupId": "slushies",
+      "groupName": "Slushies",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "slushies/strawberry_slushies",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": null
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "blueberry_slushies",
+      "name": "Blueberry Slushies",
+      "productType": "drink",
+      "categoryId": "slushies",
+      "groupId": "slushies",
+      "groupName": "Slushies",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "slushies/blueberry_slushies",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": null
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "lychee_slushies",
+      "name": "Lychee Slushies",
+      "productType": "drink",
+      "categoryId": "slushies",
+      "groupId": "slushies",
+      "groupName": "Slushies",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": "slushies/lychee_slushies",
+      "sizes": [
+        {
+          "sizeId": "regular",
+          "name": "Regular",
+          "volumeMl": 355,
+          "displayVolume": "12oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_big",
+          "name": "Go Big",
+          "volumeMl": 650,
+          "displayVolume": "22oz",
+          "price": null
+        },
+        {
+          "sizeId": "go_bigger",
+          "name": "Go Bigger",
+          "volumeMl": 1000,
+          "displayVolume": "1 Liter",
+          "price": null
+        }
+      ],
+      "variants": [],
+      "options": [],
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "hungarian_sausage_egg",
+      "name": "Hungarian Sausage w/ Egg",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 85,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "liempo",
+      "name": "Liempo",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 85,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "lechon_kawali",
+      "name": "Lechon Kawali",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 85,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "sisig",
+      "name": "Sisig",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 85,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "fried_chicken",
+      "name": "Fried Chicken",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 80,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "bacon_egg",
+      "name": "Bacon & Egg",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 80,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "spam_egg",
+      "name": "Spam & Egg",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 80,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "burger_steak",
+      "name": "Burger Steak",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 70,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "chicken_pastil",
+      "name": "Chicken Pastil",
+      "productType": "food",
+      "categoryId": "rice_meals",
+      "groupId": "rice_meals",
+      "groupName": "Rice Meals",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [
+        {
+          "optionId": "extra_rice",
+          "name": "Extra Rice",
+          "price": 20,
+          "active": true
+        },
+        {
+          "optionId": "garlic_mayo",
+          "name": "Garlic Mayo Dip",
+          "price": 10,
+          "active": true
+        },
+        {
+          "optionId": "egg",
+          "name": "Egg",
+          "price": 15,
+          "active": true
+        }
+      ],
+      "price": 70,
+      "kitchenPrepared": true
+    },
+    {
+      "productId": "extra_rice",
+      "name": "Extra Rice",
+      "productType": "addOn",
+      "categoryId": "add_ons",
+      "groupId": "rice_meal_add_ons",
+      "groupName": "Rice Meal Add-ons",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [],
+      "price": 20,
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "garlic_mayo",
+      "name": "Garlic Mayo Dip",
+      "productType": "addOn",
+      "categoryId": "add_ons",
+      "groupId": "rice_meal_add_ons",
+      "groupName": "Rice Meal Add-ons",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [],
+      "price": 10,
+      "kitchenPrepared": false
+    },
+    {
+      "productId": "egg",
+      "name": "Egg",
+      "productType": "addOn",
+      "categoryId": "add_ons",
+      "groupId": "rice_meal_add_ons",
+      "groupName": "Rice Meal Add-ons",
+      "description": null,
+      "image": null,
+      "active": true,
+      "available": true,
+      "sku": null,
+      "recipeRef": null,
+      "sizes": [],
+      "variants": [],
+      "options": [],
+      "price": 15,
+      "kitchenPrepared": false
+    }
+  ]
+}

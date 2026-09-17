@@ -1,0 +1,36 @@
+name: bigger_brew_store_management
+description: Bigger Brew Store Management - catalog administration and store reporting.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.5.3
+  supabase_flutter: ^2.10.0
+  flutter_dotenv: ^5.2.1
+  file_picker: ^12.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/catalog/product_catalog.v4.commercial.json
+    - assets/icon/bigger_brew_icon.png
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon/bigger_brew_icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icon/bigger_brew_icon.png
