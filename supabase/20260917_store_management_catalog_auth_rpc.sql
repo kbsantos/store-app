@@ -1,4 +1,4 @@
--- Bigger Brew Store Management App
+-- MyCoffeeShop Store Management App
 -- Secure catalog read/write RPCs for authenticated store-management users.
 -- Requires the Store Master Catalog Phase 1 and Phase 2 migrations to already exist.
 

@@ -1,6 +1,6 @@
-# Bigger Brew Store Management
+# MyCoffeeShop Store Management
 
-Separate Flutter back-office application for Bigger Brew. It owns store administration workflows that should not live on the customer-facing kiosk.
+Separate Flutter back-office application for MyCoffeeShop. It owns store administration workflows that should not live on the customer-facing kiosk.
 
 ## Responsibilities
 
@@ -20,7 +20,7 @@ The kiosk remains the customer-facing application. It keeps a local operational 
 
 ## Supabase setup
 
-The database must already have the Bigger Brew Store Master Catalog Phase 1 and REST API Phase 1 migrations installed.
+The database must already have the MyCoffeeShop Store Master Catalog Phase 1 and REST API Phase 1 migrations installed.
 
 Run:
 
