@@ -1,13 +1,13 @@
-# Bigger Brew Store Management
+# MyCoffeeShop Store Management
 
-Bigger Brew Store Management is a separate Flutter application for back-office catalog administration and sales reporting.
+MyCoffeeShop Store Management is a separate Flutter application for back-office catalog administration and sales reporting.
 
-It shares the existing `MyCoffeeShop` Supabase project with the Bigger Brew Kiosk but has a separate application boundary.
+It shares the existing `MyCoffeeShop` Supabase project with the MyCoffeeShop Kiosk but has a separate application boundary.
 
 ## Architecture
 
 ```text
-Bigger Brew Kiosk                 Store Management
+MyCoffeeShop Kiosk                 Store Management
       |                                  |
       | secure kiosk RPCs                | Supabase Auth
       |                                  |
@@ -20,7 +20,7 @@ The kiosk keeps its local operational catalog. Store Management writes the Supab
 
 ## First setup
 
-1. Apply the existing Bigger Brew Store Master Catalog and REST API migrations to Supabase.
+1. Apply the existing MyCoffeeShop Store Master Catalog and REST API migrations to Supabase.
 2. Apply `supabase/20260917_store_management_catalog_auth_rpc.sql`.
 3. Create/sign in a Supabase Auth user.
 4. Assign `app_metadata.store_id` and a management role (`owner`, `manager`, or `admin`).

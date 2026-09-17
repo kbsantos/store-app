@@ -28,7 +28,7 @@
         android:required="true" />
 
     <application
-        android:label="Bigger Brew Store Management"
+        android:label="MyCoffeeShop Store Management"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
