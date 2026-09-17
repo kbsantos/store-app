@@ -1,0 +1,55 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+
+# Flutter generated files
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+.fvm/
+.fvmrc
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# macOS
+.DS_Store
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Android generated/local files
+android/.gradle/
+android/local.properties
+android/captures/
+android/generated/
+android/key.properties
+
+# Gradle
+.gradle/
+**/build/
+
+# Logs / temporary files
+*.log
+*.tmp
+*.temp
+
+# Dart / tooling
+**/.dart_tool/
+**/.packages
+**/pubspec.lock.backup
+
+# Test / generated artifacts
+test-results/
+screenshots/
+tmp/
