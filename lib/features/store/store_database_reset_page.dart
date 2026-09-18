@@ -39,7 +39,8 @@ class _StoreDatabaseResetPageState extends State<StoreDatabaseResetPage> {
         title: const Text('RESET STORE DATABASE?'),
         content: const Text(
           'This permanently deletes this store\'s operational transactions, '
-          'payments, inventory movements, reporting summaries and sync logs. '
+          'payments, inventory consumption records, inventory movements, EOD closings, '
+          'reporting summaries and store-scoped sync logs. '
           'Master catalog and store configuration data will be preserved. '
           'This cannot be undone.',
         ),
@@ -149,14 +150,14 @@ class _StoreDatabaseResetPageState extends State<StoreDatabaseResetPage> {
                       ),
                       SizedBox(height: 12),
                       Text(
-                        'Deleted: transactions, payments, transaction items/options, '
-                        'inventory movements and stock summaries, sales summaries, '
-                        'and sync logs.',
+                        'Deleted: transactions, payments, transaction items/options, inventory consumption, '
+                        'inventory movements, EOD closings, stock/sales summaries, and '
+                        'store-scoped sync logs.',
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Preserved: store configuration, users, devices, products, '
-                        'categories, variants, options, and other master catalog data.',
+                        'Preserved: store configuration, users, employee invites, devices, catalog master '
+                        'data, recipes, and catalog sync state.',
                       ),
                     ],
                   ),

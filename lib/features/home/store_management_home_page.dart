@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../catalog/catalog_manager_dashboard.dart';
+import 'store_dashboard_page.dart';
 import '../sales/sales_management_page.dart';
 import '../store/store_settings_page.dart';
 import '../inventory/inventory_management_page.dart';
@@ -104,6 +105,17 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
                 style: const TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: _tile(
+                  context,
+                  Icons.dashboard_outlined,
+                  'STORE DASHBOARD',
+                  'View sales, orders, products, categories and kiosk activity at a glance.',
+                  const StoreDashboardPage(),
+                ),
+              ),
+              const SizedBox(height: 16),
               Wrap(
                 spacing: 16,
                 runSpacing: 16,

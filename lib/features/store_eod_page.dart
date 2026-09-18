@@ -14,8 +14,10 @@ class _StoreEodPageState extends State<StoreEodPage> {
   DateTime _date = DateTime.now();
   bool _loading = false;
   bool _completing = false;
+  bool _checking = false;
   String? _error;
   Map<String, dynamic>? _summary;
+  Map<String, dynamic>? _integrity;
 
   bool get _canComplete => _auth.canManageInventory;
 
@@ -54,8 +56,36 @@ class _StoreEodPageState extends State<StoreEodPage> {
       lastDate: DateTime.now(),
     );
     if (picked == null || !mounted) return;
-    setState(() => _date = picked);
+    setState(() {
+      _date = picked;
+      _integrity = null;
+    });
     await _load();
+  }
+
+  Future<void> _checkIntegrity() async {
+    if (_checking) return;
+    setState(() {
+      _checking = true;
+      _error = null;
+    });
+    try {
+      final result = await _auth.client.rpc(
+        'get_store_eod_integrity',
+        params: {'p_business_date': _dateOnly(_date)},
+      );
+      if (!mounted) return;
+      setState(() => _integrity = Map<String, dynamic>.from(result as Map));
+      final status = _integrity?['status']?.toString() ?? 'ATTENTION';
+      _message('EOD integrity: $status');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = e.toString());
+        _message('Unable to check EOD integrity: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
   }
 
   Future<void> _complete() async {
@@ -91,6 +121,7 @@ class _StoreEodPageState extends State<StoreEodPage> {
         params: {'p_business_date': _dateOnly(_date)},
       );
       await _load();
+      await _checkIntegrity();
       if (!mounted) return;
       _message('End of Day completed for ${_dateOnly(_date)}.');
       setState(() => _summary = {
@@ -125,6 +156,10 @@ class _StoreEodPageState extends State<StoreEodPage> {
     final completed = closing is Map && closing['status']?.toString() == 'completed';
     final consumption = (_summary?['inventoryConsumption'] as List?) ?? const [];
     final payments = (_summary?['payments'] as List?) ?? const [];
+    final paymentDifference = _summary?['paymentDifference'];
+    final paymentDifferenceNumber = paymentDifference is num
+        ? paymentDifference
+        : num.tryParse('$paymentDifference') ?? 0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2ED),
@@ -158,6 +193,13 @@ class _StoreEodPageState extends State<StoreEodPage> {
                     avatar: Icon(completed ? Icons.check_circle_outline : Icons.pending_outlined, size: 18),
                     label: Text(completed ? 'EOD COMPLETED' : 'OPEN'),
                   ),
+                  OutlinedButton.icon(
+                    onPressed: _checking ? null : _checkIntegrity,
+                    icon: _checking
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.fact_check_outlined),
+                    label: Text(_checking ? 'CHECKING...' : 'CHECK INTEGRITY'),
+                  ),
                   FilledButton.icon(
                     onPressed: _completing || completed || !_canComplete ? null : _complete,
                     icon: _completing ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.lock_outline),
@@ -185,6 +227,20 @@ class _StoreEodPageState extends State<StoreEodPage> {
               Expanded(child: _stat('PAYMENTS', _money(_summary!['paymentTotal']))),
             ]),
             const SizedBox(height: 18),
+            if (paymentDifferenceNumber.abs() >= 0.01)
+              Card(
+                color: const Color(0xFFFFF3CD),
+                child: ListTile(
+                  leading: const Icon(Icons.warning_amber_outlined),
+                  title: const Text('PAYMENT RECONCILIATION WARNING'),
+                  subtitle: Text('Sales and recorded payments differ by ${_money(paymentDifferenceNumber.abs())}.'),
+                ),
+              ),
+            if (paymentDifferenceNumber.abs() >= 0.01) const SizedBox(height: 14),
+            if (_integrity != null) ...[
+              _integrityCard(_integrity!),
+              const SizedBox(height: 14),
+            ],
             _section('PAYMENT SUMMARY', payments, (row) => ListTile(
               title: Text('${row['paymentMethod'] ?? 'Unknown'}'),
               trailing: Text(_money(row['totalAmount']), style: const TextStyle(fontWeight: FontWeight.w900)),
@@ -205,6 +261,45 @@ class _StoreEodPageState extends State<StoreEodPage> {
             ))),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _integrityCard(Map<String, dynamic> integrity) {
+    final status = integrity['status']?.toString() ?? 'ATTENTION';
+    final paymentBalanced = integrity['paymentBalanced'] == true;
+    final inventoryBalanced = integrity['inventoryBalanced'] == true;
+    final completed = integrity['isCompleted'] == true;
+    final difference = integrity['paymentDifference'];
+    final differenceNumber = difference is num ? difference : num.tryParse('$difference') ?? 0;
+    final ready = status == 'READY' || status == 'COMPLETED';
+
+    Widget check(String label, bool ok, String detail) => ListTile(
+      dense: true,
+      leading: Icon(ok ? Icons.check_circle_outline : Icons.warning_amber_outlined),
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+      subtitle: Text(detail),
+    );
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Expanded(child: Text('EOD INTEGRITY CHECK', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
+              Chip(label: Text(status)),
+            ]),
+            const Divider(),
+            check('Payment reconciliation', paymentBalanced,
+                paymentBalanced ? 'Sales and recorded payments reconcile.' : 'Difference: ${_money(differenceNumber.abs())}.'),
+            check('Inventory consumption', inventoryBalanced,
+                inventoryBalanced ? 'Consumption records and usage movements reconcile.' : 'Review Inventory Consumption integrity before relying on the result.'),
+            check('EOD close state', completed || ready,
+                completed ? 'This business date is already closed.' : ready ? 'The business date is ready for completion.' : 'Resolve the attention items or review the warnings before closing.'),
+          ],
+        ),
       ),
     );
   }

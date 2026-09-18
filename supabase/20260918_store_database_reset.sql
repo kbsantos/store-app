@@ -57,9 +57,29 @@ begin
   get diagnostics v_count = row_count;
   v_deleted := v_deleted || jsonb_build_object('transactions', v_count);
 
+  -- Recipe-based inventory consumption is operational data and must be cleared
+  -- before inventory movements so a reset never leaves orphaned consumption rows.
+  if to_regclass('public.inventory_consumption_records') is not null then
+    delete from public.inventory_consumption_records where store_id = v_store_id;
+    get diagnostics v_count = row_count;
+    v_deleted := v_deleted || jsonb_build_object('inventory_consumption_records', v_count);
+  else
+    v_deleted := v_deleted || jsonb_build_object('inventory_consumption_records', 'not_present');
+  end if;
+
   delete from public.inventory_movements where store_id = v_store_id;
   get diagnostics v_count = row_count;
   v_deleted := v_deleted || jsonb_build_object('inventory_movements', v_count);
+
+  -- EOD closings are operational snapshots. Clear them so a reset date can be
+  -- processed again from the newly reset operational dataset.
+  if to_regclass('public.store_eod_closings') is not null then
+    delete from public.store_eod_closings where store_id = v_store_id;
+    get diagnostics v_count = row_count;
+    v_deleted := v_deleted || jsonb_build_object('store_eod_closings', v_count);
+  else
+    v_deleted := v_deleted || jsonb_build_object('store_eod_closings', 'not_present');
+  end if;
 
   -- Reporting/stock summary objects are allowed to be either physical tables or
   -- database views. Views are derived from operational data and must not be

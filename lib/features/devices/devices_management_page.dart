@@ -107,6 +107,81 @@ class _DevicesManagementPageState extends State<DevicesManagementPage>
   void _message(String text) => ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(text)));
 
+  void _checkIntegrity() {
+    final issues = <String>[];
+    final kioskIds = <String, Map<String, dynamic>>{};
+    final kioskCodes = <String, Map<String, dynamic>>{};
+    for (final kiosk in _kiosks) {
+      final id = kiosk['id']?.toString();
+      final code = kiosk['device_code']?.toString().trim().toLowerCase();
+      if (id == null || id.isEmpty) {
+        issues.add('A kiosk is missing its device ID.');
+      } else {
+        kioskIds[id] = kiosk;
+      }
+      if (code != null && code.isNotEmpty) {
+        if (kioskCodes.containsKey(code)) {
+          issues.add('Duplicate kiosk device code: ${kiosk['device_code']}.');
+        } else {
+          kioskCodes[code] = kiosk;
+        }
+      }
+    }
+
+    final activeAssignments = <String, int>{};
+    for (final printer in _printers) {
+      final name = printer['name']?.toString().trim() ?? '';
+      final model = printer['model']?.toString().trim() ?? '';
+      final interfaceName = printer['interface']?.toString().trim() ?? '';
+      final deviceId = printer['device_id']?.toString();
+      final active = printer['is_active'] == true;
+      if (name.isEmpty) issues.add('A printer is missing a name.');
+      if (model.isEmpty) issues.add('Printer "$name" is missing a model.');
+      if (interfaceName.isEmpty) issues.add('Printer "$name" is missing an interface.');
+      if (deviceId != null && deviceId.isNotEmpty) {
+        final kiosk = kioskIds[deviceId];
+        if (kiosk == null) {
+          issues.add('Printer "$name" is assigned to a kiosk that is not registered to this store.');
+        } else if (active && kiosk['is_active'] != true) {
+          issues.add('Active printer "$name" is assigned to inactive kiosk ${kiosk['device_code']}.');
+        }
+        if (active) {
+          activeAssignments[deviceId] = (activeAssignments[deviceId] ?? 0) + 1;
+        }
+      }
+    }
+    for (final entry in activeAssignments.entries) {
+      if (entry.value > 1) {
+        final kiosk = kioskIds[entry.key];
+        issues.add('Kiosk ${kiosk?['device_code'] ?? entry.key} has ${entry.value} active printers assigned.');
+      }
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('DEVICE INTEGRITY CHECK'),
+        content: SizedBox(
+          width: 560,
+          child: issues.isEmpty
+              ? const Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('PASS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  SizedBox(height: 8),
+                  Text('Kiosk IDs/codes and printer assignments are internally consistent.'),
+                ])
+              : SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('ATTENTION', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 8),
+                  ...issues.map((issue) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Text('• $issue'))),
+                ])),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CLOSE')),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,6 +195,11 @@ class _DevicesManagementPageState extends State<DevicesManagementPage>
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Check device integrity',
+            onPressed: _loading ? null : _checkIntegrity,
+            icon: const Icon(Icons.fact_check_outlined),
+          ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),

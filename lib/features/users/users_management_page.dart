@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
+import '../../core/auth/store_management_permissions.dart';
 
 class UsersManagementPage extends StatefulWidget {
   const UsersManagementPage({super.key});
@@ -11,12 +12,13 @@ class UsersManagementPage extends StatefulWidget {
 class _UsersManagementPageState extends State<UsersManagementPage>
     with SingleTickerProviderStateMixin {
   final _auth = const StoreManagementAuth();
+  late final StoreManagementPermissions _permissions = StoreManagementPermissions(_auth);
   late final TabController _tabs;
   bool _loading = true;
   List<Map<String, dynamic>> _employees = const [];
   Object? _error;
 
-  bool get _canManage => _auth.role == 'owner' || _auth.role == 'admin';
+  bool get _canManage => _permissions.canManageUsers;
 
   @override
   void initState() {
@@ -79,6 +81,34 @@ class _UsersManagementPageState extends State<UsersManagementPage>
     }
   }
 
+  Future<void> _sendPasswordEmail(Map<String, dynamic> employee) async {
+    if (!_canManage) return;
+    final email = employee['email']?.toString().trim() ?? '';
+    if (email.isEmpty) return;
+    final name = employee['full_name']?.toString().trim();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('SEND PASSWORD EMAIL?'),
+        content: Text(
+          'Send a Supabase password setup/recovery email to ${name == null || name.isEmpty ? email : name} ($email)?\n\n'
+          'The employee must use that email to set or reset their password. No password is created or stored by Store Management.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('CANCEL')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('SEND EMAIL')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _auth.sendPasswordSetupEmail(email);
+      if (mounted) _message('Password setup email sent to $email.');
+    } catch (e) {
+      if (mounted) _message('Unable to send password email: $e');
+    }
+  }
+
   void _message(String message) => ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(message)));
 
@@ -111,6 +141,7 @@ class _UsersManagementPageState extends State<UsersManagementPage>
                     canEdit: _canManage,
                     onEdit: _editEmployee,
                     onToggle: _toggle,
+                    onPasswordEmail: _sendPasswordEmail,
                   ),
                   const _PermissionsPage(),
                 ]),
@@ -119,11 +150,18 @@ class _UsersManagementPageState extends State<UsersManagementPage>
 }
 
 class _EmployeeList extends StatelessWidget {
-  const _EmployeeList({required this.employees, required this.canEdit, required this.onEdit, required this.onToggle});
+  const _EmployeeList({
+    required this.employees,
+    required this.canEdit,
+    required this.onEdit,
+    required this.onToggle,
+    required this.onPasswordEmail,
+  });
   final List<Map<String, dynamic>> employees;
   final bool canEdit;
   final Future<void> Function(Map<String, dynamic>) onEdit;
   final Future<void> Function(Map<String, dynamic>) onToggle;
+  final Future<void> Function(Map<String, dynamic>) onPasswordEmail;
 
   @override
   Widget build(BuildContext context) {
@@ -159,6 +197,11 @@ class _EmployeeList extends StatelessWidget {
                         icon: const Icon(Icons.link_outlined),
                       )
                     else ...[
+                      IconButton(
+                        tooltip: 'SEND PASSWORD EMAIL',
+                        onPressed: () => onPasswordEmail(employee),
+                        icon: const Icon(Icons.mark_email_read_outlined),
+                      ),
                       IconButton(onPressed: () => onEdit(employee), icon: const Icon(Icons.edit_outlined)),
                       Switch(value: active, onChanged: (_) => onToggle(employee)),
                     ],
@@ -270,7 +313,10 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
                 SwitchListTile.adaptive(title: const Text('Active'), value: _active, onChanged: (v) => setState(() => _active = v)),
               ],
               const SizedBox(height: 8),
-              const Text('If the email is not yet registered in Supabase Auth, the employee will be saved as PENDING AUTH and can be linked later. This screen never creates or stores passwords.', style: TextStyle(color: Colors.black54, fontSize: 12)),
+              const Text(
+                'If the email is not yet registered in Supabase Auth, the employee will be saved as PENDING AUTH and can be linked later. After linking, an admin or owner can send a Supabase password setup email. This screen never creates or stores passwords.',
+                style: TextStyle(color: Colors.black54, fontSize: 12),
+              ),
             ]),
           ),
         ),
@@ -283,44 +329,74 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
 
 class _PermissionsPage extends StatelessWidget {
   const _PermissionsPage();
-  static const _rows = <String, List<bool>>{
-    'Store Profile': [true, true, false],
-    'Catalog': [true, true, false],
-    'Inventory': [true, true, true],
-    'Recipes': [true, true, false],
-    'Sales': [true, true, true],
-    'End of Day': [true, true, false],
-    'Devices': [true, true, false],
-    'Users': [true, false, false],
-    'Settings': [true, true, false],
-    'Database Reset': [true, false, false],
-  };
 
   @override
   Widget build(BuildContext context) {
-    const roles = ['ADMIN', 'MANAGER', 'STAFF'];
+    const roles = ['OWNER', 'ADMIN', 'MANAGER', 'EDITOR', 'STAFF'];
+    const rows = <List<String>>[
+      ['Dashboard / Sales', 'VIEW', 'VIEW', 'VIEW', 'VIEW', 'VIEW'],
+      ['Product Catalog', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
+      ['Inventory', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
+      ['Recipes', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
+      ['End of Day', 'COMPLETE', 'COMPLETE', 'COMPLETE', 'VIEW', 'VIEW'],
+      ['Kiosks / Printers', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
+      ['Store Profile', 'EDIT', 'EDIT', 'VIEW', 'VIEW', 'VIEW'],
+      ['Operating Hours', 'EDIT', 'EDIT', 'VIEW', 'VIEW', 'VIEW'],
+      ['Database Reset', 'RESET', 'RESET', '—', '—', '—'],
+      ['Employees / Roles', 'MANAGE', 'MANAGE', 'VIEW', 'VIEW', 'VIEW'],
+    ];
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        const Text('ROLES & PERMISSIONS', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900)),
+        const Text(
+          'ROLES & PERMISSIONS',
+          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+        ),
         const SizedBox(height: 8),
-        const Text('Current application permission matrix. Authentication and store scope remain enforced by Supabase.', style: TextStyle(color: Colors.black54)),
+        const Text(
+          'Application access matrix. Supabase RPCs remain the authoritative security boundary.',
+          style: TextStyle(color: Colors.black54),
+        ),
         const SizedBox(height: 18),
         Card(
-          clipBehavior: Clip.antiAlias,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              columns: [const DataColumn(label: Text('FUNCTION')), ...roles.map((r) => DataColumn(label: Text(r)))],
-              rows: _rows.entries.map((entry) => DataRow(cells: [
-                DataCell(Text(entry.key)),
-                ...entry.value.map((allowed) => DataCell(Icon(allowed ? Icons.check_circle_outline : Icons.remove, size: 20))),
-              ])).toList(),
+              columns: [
+                const DataColumn(label: Text('FUNCTION')),
+                ...roles.map((r) => DataColumn(label: Text(r))),
+              ],
+              rows: rows
+                  .map(
+                    (row) => DataRow(
+                      cells: row
+                          .map(
+                            (value) => DataCell(
+                              Text(
+                                value,
+                                style: TextStyle(
+                                  fontWeight: value == '—' ? FontWeight.normal : FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('Note: EDITOR remains a catalog-specific role used by existing catalog access rules. Employee management is restricted to ADMIN and OWNER.'))),
+        const SizedBox(height: 14),
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'EDITOR is catalog-specific and remains read-only in Store Management because catalog publishing is restricted to manager, admin and owner accounts. Staff and editor accounts can still access permitted read-only screens.',
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -328,8 +404,29 @@ class _PermissionsPage extends StatelessWidget {
 
 class _ErrorState extends StatelessWidget {
   const _ErrorState({required this.error, required this.onRetry});
+
   final Object error;
   final VoidCallback onRetry;
+
   @override
-  Widget build(BuildContext context) => Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.error_outline, size: 48), const SizedBox(height: 12), Text('Unable to load users.\n$error', textAlign: TextAlign.center), const SizedBox(height: 12), FilledButton(onPressed: onRetry, child: const Text('RETRY'))])));
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 52),
+              const SizedBox(height: 12),
+              const Text(
+                'Unable to load employees',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              Text('$error', textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton(onPressed: onRetry, child: const Text('RETRY')),
+            ],
+          ),
+        ),
+      );
 }

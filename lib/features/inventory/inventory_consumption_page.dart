@@ -16,6 +16,7 @@ class _InventoryConsumptionPageState extends State<InventoryConsumptionPage> {
   bool _loadingSummary = false;
   String? _error;
   Map<String, dynamic>? _lastResult;
+  Map<String, dynamic>? _integrity;
   List<Map<String, dynamic>> _summary = [];
 
   bool get _canRun => _auth.canManageInventory;
@@ -57,6 +58,22 @@ class _InventoryConsumptionPageState extends State<InventoryConsumptionPage> {
         _loadingSummary = false;
         _error = e.toString();
       });
+    }
+  }
+
+  Future<void> _checkIntegrity() async {
+    setState(() => _loadingSummary = true);
+    try {
+      final result = await _auth.client.rpc(
+        'get_store_inventory_consumption_integrity',
+        params: {'p_business_date': _dateText(_date)},
+      );
+      if (!mounted) return;
+      setState(() => _integrity = Map<String, dynamic>.from(result as Map));
+    } catch (e) {
+      if (mounted) _message('Unable to run integrity check: $e');
+    } finally {
+      if (mounted) setState(() => _loadingSummary = false);
     }
   }
 
@@ -154,6 +171,14 @@ class _InventoryConsumptionPageState extends State<InventoryConsumptionPage> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _loadingSummary ? null : _checkIntegrity,
+                          icon: const Icon(Icons.fact_check_outlined),
+                          label: const Text('CHECK INTEGRITY'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: FilledButton.icon(
                           onPressed: _loading || !_canRun ? null : _runConsumption,
                           icon: _loading ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.play_arrow),
@@ -166,6 +191,45 @@ class _InventoryConsumptionPageState extends State<InventoryConsumptionPage> {
               ),
             ),
           ),
+          if (_integrity != null) ...[
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(child: Text('CONSUMPTION INTEGRITY', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
+                        Icon(
+                          _integrity!['isBalanced'] == true ? Icons.check_circle_outline : Icons.warning_amber_outlined,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 24,
+                      runSpacing: 12,
+                      children: [
+                        _stat('Recorded lines', _integrity!['recordedConsumptionLines']),
+                        _stat('Usage movements', _integrity!['usageMovementLines']),
+                        _stat('Missing movements', _integrity!['missingUsageMovementLines']),
+                        _stat('Orphan movements', _integrity!['orphanUsageMovementLines']),
+                        _stat('Quantity difference', _integrity!['quantityDifference']),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _integrity!['status']?.toString() == 'BALANCED'
+                          ? 'Consumption records and usage movements reconcile for this business date.'
+                          : 'Review the inventory movement audit trail before relying on this date as fully reconciled.',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           if (_lastResult != null) ...[
             const SizedBox(height: 16),
             Card(

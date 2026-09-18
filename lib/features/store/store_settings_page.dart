@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/auth/store_management_auth.dart';
+import '../../core/auth/store_management_permissions.dart';
 import 'store_database_reset_page.dart';
 import 'store_profile_page.dart';
 import 'store_operating_hours_page.dart';
@@ -11,7 +12,9 @@ class StoreSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = const StoreManagementAuth();
-    final canReset = auth.role == 'owner' || auth.role == 'admin';
+    final permissions = StoreManagementPermissions(auth);
+    final canReset = permissions.canResetDatabase;
+    final canEditHours = permissions.canManageOperatingHours;
 
     return Scaffold(
       appBar: AppBar(title: const Text('STORE SETTINGS')),
@@ -53,7 +56,7 @@ class StoreSettingsPage extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
               subtitle: Text(
-                canReset
+                canEditHours
                     ? 'Set the weekly opening and closing schedule for the store.'
                     : 'View the weekly opening and closing schedule.',
               ),

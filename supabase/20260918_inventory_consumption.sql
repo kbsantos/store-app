@@ -115,7 +115,7 @@ begin
   -- has a status column. A NULL status must not automatically be treated as a
   -- completed sale; doing so could consume draft/pending transactions.
   if v_status_col is null then
-    v_status_condition := 'true';
+    raise exception 'transactions table does not expose a status field; inventory consumption is disabled until completed-sale status can be verified.';
   else
     v_status_condition := format(
       '(lower(coalesce(t.%I::text, '''')) in (''completed'',''complete'',''paid'',''closed''))',
