@@ -95,7 +95,20 @@ class ProductCatalogRepository {
       final variantIds = <String>{};
       for (final x in p.variants) { if (x.variantId.trim().isEmpty || !variantIds.add(x.variantId)) throw FormatException('Invalid or duplicate variant ID: ${x.variantId}'); if (x.price != null && x.price! < 0) throw FormatException('Product ${p.productId} variant ${x.variantId} has a negative price.'); }
       final optionIdsForProduct = <String>{};
-      for (final x in p.options) { if (x.optionId.trim().isEmpty || !optionIdsForProduct.add(x.optionId)) throw FormatException('Invalid or duplicate product option ID: ${x.optionId}'); if (!optionIds.contains(x.optionId)) throw FormatException('Product ${p.productId} references unknown option ${x.optionId}.'); if (x.price != null && x.price! < 0) throw FormatException('Product ${p.productId} option ${x.optionId} has a negative price.'); }
+      // Product options may be either assignments copied from a shared option
+      // definition or product-specific options created directly on the product.
+      // A product-specific option is intentionally allowed to have no matching
+      // entry in optionDefinitions. Requiring every product option to exist in
+      // the shared definitions incorrectly rejects valid product-specific options
+      // and prevents unrelated catalog changes from being saved.
+      for (final x in p.options) {
+        if (x.optionId.trim().isEmpty || !optionIdsForProduct.add(x.optionId)) {
+          throw FormatException('Invalid or duplicate product option ID: ${x.optionId}');
+        }
+        if (x.price != null && x.price! < 0) {
+          throw FormatException('Product ${p.productId} option ${x.optionId} has a negative price.');
+        }
+      }
     }
   }
 

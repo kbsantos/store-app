@@ -12,6 +12,8 @@ class StoreManagementAuth {
 
   bool get isSignedIn => session != null;
   bool get canManageCatalog => role == 'owner' || role == 'manager' || role == 'admin';
+  bool get canManageInventory => role == 'owner' || role == 'manager' || role == 'admin';
+  bool get canManageDevices => role == 'owner' || role == 'manager' || role == 'admin';
 
   Future<void> signIn(String email, String password) async {
     await client.auth.signInWithPassword(email: email.trim(), password: password);

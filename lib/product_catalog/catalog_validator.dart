@@ -172,11 +172,6 @@ class CatalogValidator {
         if (o.optionId.trim().isEmpty) {
           error('invalid_product_option', 'Product option has invalid ID.',
               p.productId);
-        } else if (catalog.optionDefinition(o.optionId) == null) {
-          warn(
-              'unregistered_product_option',
-              'Product option is not present in shared option definitions.',
-              p.productId);
         }
       }
     }

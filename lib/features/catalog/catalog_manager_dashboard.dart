@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../product_catalog/catalog_validator.dart';
 import '../../product_catalog/product_catalog_models.dart';
-import '../../product_catalog/product_catalog_repository.dart';
 import '../../core/auth/store_management_auth.dart';
 import 'category_manager.dart';
 import 'product_manager.dart';
@@ -22,7 +21,6 @@ class CatalogManagerDashboardPage extends StatefulWidget {
 
 class _CatalogManagerDashboardPageState
     extends State<CatalogManagerDashboardPage> {
-  final _repository = const ProductCatalogRepository();
   final _masterService = StoreCatalogMasterService();
   ProductCatalog? _catalog;
   CatalogValidationReport? _report;

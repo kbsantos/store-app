@@ -1,33 +1,73 @@
 import 'package:flutter/material.dart';
 
 import '../catalog/catalog_manager_dashboard.dart';
-import '../reporting_api/reporting_dashboard_page.dart';
+import '../sales/sales_management_page.dart';
+import '../store/store_settings_page.dart';
+import '../inventory/inventory_management_page.dart';
+import '../recipes/recipes_management_page.dart';
+import '../store_eod_page.dart';
+import '../devices/devices_management_page.dart';
+import '../users/users_management_page.dart';
 import '../../core/auth/store_management_auth.dart';
 
-class StoreManagementHomePage extends StatelessWidget {
+class StoreManagementHomePage extends StatefulWidget {
   const StoreManagementHomePage({super.key});
 
   @override
+  State<StoreManagementHomePage> createState() => _StoreManagementHomePageState();
+}
+
+class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
+  final _auth = const StoreManagementAuth();
+  late Future<String> _storeNameFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _storeNameFuture = _loadStoreName();
+  }
+
+  Future<String> _loadStoreName() async {
+    try {
+      final result = await _auth.client.rpc('get_store_management_profile');
+      final profile = Map<String, dynamic>.from(result as Map);
+      final name = profile['name']?.toString().trim() ?? '';
+      return name.isEmpty ? 'MyCoffeeShop' : name;
+    } catch (_) {
+      return 'MyCoffeeShop';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final auth = const StoreManagementAuth();
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2ED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF171717),
         foregroundColor: Colors.white,
-        title: const Text(
-          'MyCoffeeShop STORE MANAGEMENT',
-          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: .7),
+        title: FutureBuilder<String>(
+          future: _storeNameFuture,
+          builder: (context, snapshot) {
+            final storeName = snapshot.data ?? 'MyCoffeeShop';
+            return Text(
+              '$storeName - Store Management',
+              style: const TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: .7,
+              ),
+              overflow: TextOverflow.ellipsis,
+            );
+          },
         ),
         actions: [
           Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(auth.role.toUpperCase()),
+              child: Text(_auth.role.toUpperCase()),
             ),
           ),
           IconButton(
-            onPressed: () => auth.signOut(),
+            onPressed: () => _auth.signOut(),
             icon: const Icon(Icons.logout),
             tooltip: 'Sign out',
           ),
@@ -59,7 +99,7 @@ class StoreManagementHomePage extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Store ${auth.storeId}',
+                'Store ${_auth.storeId}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54),
               ),
@@ -82,10 +122,10 @@ class StoreManagementHomePage extends StatelessWidget {
                     width: width,
                     child: _tile(
                       context,
-                      Icons.bar_chart_outlined,
-                      'SALES REPORTING',
-                      'Review sales by date, category, product and kiosk.',
-                      const ReportingDashboardPage(),
+                      Icons.point_of_sale_outlined,
+                      'SALES',
+                      'Manage sales reporting, transactions and hourly sales.',
+                      const SalesManagementPage(),
                     ),
                   ),
                   SizedBox(
@@ -94,8 +134,58 @@ class StoreManagementHomePage extends StatelessWidget {
                       context,
                       Icons.store_outlined,
                       'STORE & KIOSKS',
-                      'Reserved for store and device administration.',
-                      null,
+                      'Open store settings, data management and device administration.',
+                      const StoreSettingsPage(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: _tile(
+                      context,
+                      Icons.inventory_2_outlined,
+                      'INVENTORY',
+                      'Manage inventory items, stock, receiving, consumption and movements.',
+                      const InventoryManagementPage(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: _tile(
+                      context,
+                      Icons.menu_book_outlined,
+                      'RECIPES',
+                      'Manage product recipes and ingredient usage definitions.',
+                      const RecipesManagementPage(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: _tile(
+                      context,
+                      Icons.event_available_outlined,
+                      'END OF DAY',
+                      'Review sales, payments and inventory consumption, then close the business date.',
+                      const StoreEodPage(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: _tile(
+                      context,
+                      Icons.devices_other_outlined,
+                      'DEVICES',
+                      'Manage store kiosks and registered printers.',
+                      const DevicesManagementPage(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: _tile(
+                      context,
+                      Icons.people_outline,
+                      'USERS',
+                      'Manage employees, roles and store permissions.',
+                      const UsersManagementPage(),
                     ),
                   ),
                 ],
