@@ -1,3 +1,4 @@
+import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import 'reporting_api_service.dart';
 
@@ -42,7 +43,7 @@ class _ReportingDashboardPageState extends State<ReportingDashboardPage> {
   }
 
   String _date(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-  String _money(num v) => '₱${v.toStringAsFixed(2)}';
+  String _money(num v) => StoreCurrency.format(v);
   List<String> get _categories => ['ALL', ...(_rows.map((e) => e.category).toSet().toList()..sort())];
   List<String> get _devices => ['ALL', ...(_rows.map((e) => e.deviceId).where((e) => e.isNotEmpty).toSet().toList()..sort())];
   Map<String, List<ReportingProductSale>> get _grouped { final result = <String, List<ReportingProductSale>>{}; for (final row in _rows) { result.putIfAbsent(row.category, () => []).add(row); } return result; }

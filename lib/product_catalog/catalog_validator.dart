@@ -119,7 +119,53 @@ class CatalogValidator {
       }
     }
 
+    final chargeIds = <String>{};
+    for (final charge in catalog.automaticCharges) {
+      if (charge.chargeId.isEmpty || !_id.hasMatch(charge.chargeId)) {
+        error('invalid_charge_id', 'Invalid automatic charge ID: ${charge.chargeId}', charge.chargeId);
+      }
+      if (!chargeIds.add(charge.chargeId)) {
+        error('duplicate_charge_id', 'Duplicate automatic charge ID: ${charge.chargeId}', charge.chargeId);
+      }
+      if (charge.name.trim().isEmpty) {
+        error('missing_charge_name', 'Automatic charge name is required.', charge.chargeId);
+      }
+      if (charge.amount < 0) {
+        error('negative_charge_amount', 'Automatic charge amount cannot be negative.', charge.chargeId);
+      }
+      if (!{'category', 'product', 'product_type'}.contains(charge.scope)) {
+        error('invalid_charge_scope', 'Invalid automatic charge scope: ${charge.scope}', charge.chargeId);
+      }
+      final hasTarget = switch (charge.scope) {
+        'category' => charge.categoryIds.isNotEmpty,
+        'product' => charge.productIds.isNotEmpty,
+        'product_type' => charge.productTypes.isNotEmpty,
+        _ => false,
+      };
+      if (!hasTarget) {
+        error('missing_charge_target', 'Automatic charge must have at least one target.', charge.chargeId);
+      }
+      for (final id in charge.categoryIds) {
+        if (!categoryIds.contains(id)) error('missing_charge_category_reference', 'Automatic charge references missing category: $id', charge.chargeId);
+      }
+      for (final id in charge.productIds) {
+        // Product IDs are checked after this section; reference validation is repeated below.
+        if (id.trim().isEmpty) error('invalid_charge_product_reference', 'Automatic charge contains an empty product ID.', charge.chargeId);
+      }
+      for (final type in charge.productTypes) {
+        if (!_types.contains(type)) error('invalid_charge_product_type', 'Automatic charge uses invalid product type: $type', charge.chargeId);
+      }
+    }
+
     final productIds = <String>{};
+    for (final charge in catalog.automaticCharges) {
+      for (final id in charge.productIds) {
+        if (!catalog.products.any((p) => p.productId == id)) {
+          error('missing_charge_product_reference', 'Automatic charge references missing product: $id', charge.chargeId);
+        }
+      }
+    }
+
     final skuOwners = <String, String>{};
     final productNamesByCategory = <String, Map<String, String>>{};
     for (final p in catalog.products) {

@@ -1,3 +1,4 @@
+import '../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 
 import '../core/auth/store_management_auth.dart';
@@ -26,7 +27,7 @@ class _StoreEodPageState extends State<StoreEodPage> {
 
   String _money(dynamic value) {
     final n = value is num ? value : num.tryParse('$value') ?? 0;
-    return '₱${n.toStringAsFixed(2)}';
+    return StoreCurrency.format(n);
   }
 
   Future<void> _load() async {

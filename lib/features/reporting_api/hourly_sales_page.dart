@@ -1,3 +1,4 @@
+import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -70,7 +71,7 @@ class _HourlySalesPageState extends State<HourlySalesPage> {
   String _dateOnly(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  String _money(num value) => '₱${value.toStringAsFixed(2)}';
+  String _money(num value) => StoreCurrency.format(value);
 
   num get _sales => _rows.fold<num>(0, (sum, row) => sum + row.totalSales);
   int get _transactions => _rows.fold(0, (sum, row) => sum + row.transactionCount);

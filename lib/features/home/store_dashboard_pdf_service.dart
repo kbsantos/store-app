@@ -1,3 +1,4 @@
+import '../../core/currency/store_currency.dart';
 import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart';
@@ -154,7 +155,7 @@ class StoreDashboardPdfService {
     }).join(' ');
   }
 
-  static String _money(num value) => 'PHP ${value.toStringAsFixed(2)}';
+  static String _money(num value) => '${StoreCurrency.code} ${StoreCurrency.format(value).substring(StoreCurrency.symbol.length)}';
 
   static String _date(DateTime value) =>
       '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';

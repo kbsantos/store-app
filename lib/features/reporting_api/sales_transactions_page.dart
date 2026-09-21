@@ -1,3 +1,4 @@
+import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
 
@@ -42,7 +43,7 @@ class _SalesTransactionsPageState extends State<SalesTransactionsPage> {
     return num.tryParse('$value') ?? 0;
   }
 
-  String _money(dynamic value) => '₱${_num(value).toStringAsFixed(2)}';
+  String _money(dynamic value) => StoreCurrency.format(_num(value));
 
   String _first(Map<String, dynamic> map, List<String> keys, [String fallback = '']) {
     for (final key in keys) {

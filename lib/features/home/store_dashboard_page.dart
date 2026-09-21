@@ -1,3 +1,4 @@
+import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 
@@ -40,7 +41,7 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
   String _date(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  String _money(num value) => '₱${value.toStringAsFixed(2)}';
+  String _money(num value) => StoreCurrency.format(value);
 
   num _num(dynamic value) =>
       value is num ? value : num.tryParse('$value') ?? 0;

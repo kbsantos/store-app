@@ -1,3 +1,4 @@
+import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
 
@@ -28,7 +29,7 @@ class _PaymentSummaryPageState extends State<PaymentSummaryPage> {
   num _num(dynamic value) =>
       value is num ? value : num.tryParse('$value') ?? 0;
 
-  String _money(num value) => '₱${value.toStringAsFixed(2)}';
+  String _money(num value) => StoreCurrency.format(value);
 
   Future<void> _load() async {
     setState(() {

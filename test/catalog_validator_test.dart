@@ -77,6 +77,20 @@ void main() {
     expect(report.issues.any((i) => i.code == 'invalid_size_volume'), isTrue);
   });
 
+  test('preserves auto apply on product-specific options', () {
+    const option = ProductOption(
+      optionId: 'paper_straw',
+      name: 'Paper Straw',
+      price: 2,
+      active: true,
+      autoApply: true,
+    );
+    final decoded = ProductOption.fromJson(option.toJson());
+    expect(decoded.autoApply, isTrue);
+    final report = validator.validate(catalog([product(options: [option])]));
+    expect(report.errors, 0);
+  });
+
   test('allows product-specific option without shared definition', () {
     final report = validator.validate(catalog([
       product(options: [const ProductOption(optionId: 'biscoff', name: 'Biscoff', price: 30, active: true)]),
