@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/currency/store_currency.dart';
 import 'reporting_api_service.dart';
+import 'reporting_pdf_service.dart';
+import 'reporting_pdf_viewer.dart';
 
 class CategorySalesPage extends StatefulWidget {
   const CategorySalesPage({super.key});
@@ -68,10 +70,27 @@ class _CategorySalesPageState extends State<CategorySalesPage> {
     ])),
   );
 
+  Future<void> _viewPdf() async {
+    if (_loading) return;
+    final filename = 'category_sales_${_date(_start)}_${_date(_end)}.pdf';
+    await ReportingPdfViewer.show(
+      context: context,
+      filename: filename,
+      build: (_) => StoreReportingPdfService.buildCategorySales(
+        storeId: _rows.isNotEmpty ? _rows.first.storeId : 'Store',
+        startDate: _start,
+        endDate: _end,
+        rows: _rows,
+        device: _device,
+      ),
+    );
+  }
+
   Widget _filters() => Card(child: Padding(padding: const EdgeInsets.all(16), child: Wrap(spacing: 12, runSpacing: 12, crossAxisAlignment: WrapCrossAlignment.center, children: [
     OutlinedButton.icon(onPressed: () => _pick(true), icon: const Icon(Icons.calendar_today_outlined), label: Text('FROM ${_date(_start)}')),
     OutlinedButton.icon(onPressed: () => _pick(false), icon: const Icon(Icons.calendar_today_outlined), label: Text('TO ${_date(_end)}')),
-    SizedBox(width: 180, child: DropdownButtonFormField<String>(initialValue: _devices.contains(_device) ? _device : 'ALL', decoration: const InputDecoration(labelText: 'Kiosk'), items: _devices.map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(), onChanged: (v) async { if (v == null) return; setState(() => _device = v); await _load(); })),
+    SizedBox(width: 260, child: DropdownButtonFormField<String>(isExpanded: true, initialValue: _devices.contains(_device) ? _device : 'ALL', decoration: const InputDecoration(labelText: 'Kiosk'), items: _devices.map((v) => DropdownMenuItem(value: v, child: Text(v, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) async { if (v == null) return; setState(() => _device = v); await _load(); })),
+    IconButton(tooltip: 'View PDF', onPressed: _loading ? null : _viewPdf, icon: const Icon(Icons.picture_as_pdf_outlined)),
   ])));
 
   Widget _body() {

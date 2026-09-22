@@ -1,6 +1,8 @@
 import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import 'reporting_api_service.dart';
+import 'reporting_pdf_service.dart';
+import 'reporting_pdf_viewer.dart';
 
 class ReportingDashboardPage extends StatefulWidget {
   const ReportingDashboardPage({super.key});
@@ -67,11 +69,29 @@ class _ReportingDashboardPageState extends State<ReportingDashboardPage> {
     ])),
   );
 
+  Future<void> _viewPdf() async {
+    if (_loading) return;
+    final filename = 'sales_reporting_${_date(_startDate)}_${_date(_endDate)}.pdf';
+    await ReportingPdfViewer.show(
+      context: context,
+      filename: filename,
+      build: (_) => StoreReportingPdfService.buildProductSales(
+        storeId: _rows.isNotEmpty ? _rows.first.storeId : 'Store',
+        startDate: _startDate,
+        endDate: _endDate,
+        rows: _rows,
+        category: _selectedCategory,
+        device: _deviceId,
+      ),
+    );
+  }
+
   Widget _filters() => Card(child: Padding(padding: const EdgeInsets.all(16), child: Wrap(spacing: 12, runSpacing: 12, crossAxisAlignment: WrapCrossAlignment.center, children: [
     OutlinedButton.icon(onPressed: () => _pickDate(true), icon: const Icon(Icons.calendar_today_outlined), label: Text('FROM ${_date(_startDate)}')),
     OutlinedButton.icon(onPressed: () => _pickDate(false), icon: const Icon(Icons.calendar_today_outlined), label: Text('TO ${_date(_endDate)}')),
-    DropdownButton<String>(value: _categories.contains(_selectedCategory) ? _selectedCategory : 'ALL', items: _categories.map((v) => DropdownMenuItem(value: v, child: Text(v == 'ALL' ? 'ALL CATEGORIES' : v))).toList(), onChanged: (v) async { if (v == null) return; setState(() => _selectedCategory = v); await _load(); }),
-    DropdownButton<String>(value: _devices.contains(_deviceId) ? _deviceId : 'ALL', items: _devices.map((v) => DropdownMenuItem(value: v, child: Text(v == 'ALL' ? 'ALL KIOSKS' : v))).toList(), onChanged: (v) async { if (v == null) return; setState(() => _deviceId = v); await _load(); }),
+    SizedBox(width: 220, child: DropdownButton<String>(isExpanded: true, value: _categories.contains(_selectedCategory) ? _selectedCategory : 'ALL', items: _categories.map((v) => DropdownMenuItem(value: v, child: Text(v == 'ALL' ? 'ALL CATEGORIES' : v, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) async { if (v == null) return; setState(() => _selectedCategory = v); await _load(); })),
+    SizedBox(width: 260, child: DropdownButton<String>(isExpanded: true, value: _devices.contains(_deviceId) ? _deviceId : 'ALL', items: _devices.map((v) => DropdownMenuItem(value: v, child: Text(v == 'ALL' ? 'ALL KIOSKS' : v, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) async { if (v == null) return; setState(() => _deviceId = v); await _load(); })),
+    IconButton(tooltip: 'View PDF', onPressed: _loading ? null : _viewPdf, icon: const Icon(Icons.picture_as_pdf_outlined)),
   ])));
 
   Widget _body() {

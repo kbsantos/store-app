@@ -29,6 +29,8 @@ flutter:
     - .env
     - assets/catalog/product_catalog.v4.commercial.json
     - assets/icon/bigger_brew_icon.png
+    - assets/fonts/DejaVuSans.ttf
+    - assets/fonts/DejaVuSans-Bold.ttf
 
 flutter_launcher_icons:
   android: true

@@ -1,6 +1,8 @@
 import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
+import 'reporting_pdf_service.dart';
+import 'reporting_pdf_viewer.dart';
 
 class SalesTransactionsPage extends StatefulWidget {
   const SalesTransactionsPage({super.key});
@@ -104,6 +106,23 @@ class _SalesTransactionsPageState extends State<SalesTransactionsPage> {
       }
     });
     await _load();
+  }
+
+  Future<void> _viewPdf() async {
+    if (_loading) return;
+    final filename = 'sales_transactions_${_date(_start)}_${_date(_end)}.pdf';
+    await ReportingPdfViewer.show(
+      context: context,
+      filename: filename,
+      build: (_) => StoreReportingPdfService.buildTransactions(
+        storeId: _auth.storeId ?? 'Store',
+        startDate: _start,
+        endDate: _end,
+        rows: _rows,
+        search: _search.text,
+        status: _status,
+      ),
+    );
   }
 
   Future<void> _openDetail(Map<String, dynamic> row) async {
@@ -297,6 +316,7 @@ class _SalesTransactionsPageState extends State<SalesTransactionsPage> {
                         onPressed: _loading ? null : _load,
                         child: const Text('APPLY'),
                       ),
+                      IconButton(tooltip: 'View PDF', onPressed: _loading ? null : _viewPdf, icon: const Icon(Icons.picture_as_pdf_outlined)),
                     ],
                   ),
                 ],

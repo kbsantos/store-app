@@ -1,6 +1,8 @@
 import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
+import 'reporting_pdf_service.dart';
+import 'reporting_pdf_viewer.dart';
 
 class PaymentSummaryPage extends StatefulWidget {
   const PaymentSummaryPage({super.key});
@@ -131,6 +133,21 @@ class _PaymentSummaryPageState extends State<PaymentSummaryPage> {
         ),
       );
 
+  Future<void> _viewPdf() async {
+    if (_loading) return;
+    final filename = 'payment_summary_${_date(_start)}_${_date(_end)}.pdf';
+    await ReportingPdfViewer.show(
+      context: context,
+      filename: filename,
+      build: (_) => StoreReportingPdfService.buildPaymentSummary(
+        storeId: _auth.storeId ?? 'Store',
+        startDate: _start,
+        endDate: _end,
+        rows: _rows,
+      ),
+    );
+  }
+
   Widget _filters() => Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -148,6 +165,7 @@ class _PaymentSummaryPageState extends State<PaymentSummaryPage> {
                 icon: const Icon(Icons.calendar_today_outlined),
                 label: Text('TO ${_date(_end)}'),
               ),
+              IconButton(tooltip: 'View PDF', onPressed: _loading ? null : _viewPdf, icon: const Icon(Icons.picture_as_pdf_outlined)),
             ],
           ),
         ),

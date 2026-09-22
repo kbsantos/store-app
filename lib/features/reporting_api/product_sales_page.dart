@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/currency/store_currency.dart';
 import 'reporting_api_service.dart';
+import 'reporting_pdf_service.dart';
+import 'reporting_pdf_viewer.dart';
 
 class ProductSalesPage extends StatefulWidget {
   const ProductSalesPage({super.key});
@@ -101,23 +103,47 @@ class _ProductSalesPageState extends State<ProductSalesPage> {
     ),
   );
 
+  Future<void> _viewPdf() async {
+    if (_loading) return;
+    final filename = 'product_sales_${_date(_start)}_${_date(_end)}.pdf';
+    await ReportingPdfViewer.show(
+      context: context,
+      filename: filename,
+      build: (_) => StoreReportingPdfService.buildProductSales(
+        storeId: _rows.isNotEmpty ? _rows.first.storeId : 'Store',
+        startDate: _start,
+        endDate: _end,
+        rows: _rows,
+        category: _category,
+        device: _device,
+      ),
+    );
+  }
+
   Widget _filters() => Card(child: Padding(padding: const EdgeInsets.all(16), child: Wrap(
     spacing: 12, runSpacing: 12, crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       OutlinedButton.icon(onPressed: () => _pick(true), icon: const Icon(Icons.calendar_today_outlined), label: Text('FROM ${_date(_start)}')),
       OutlinedButton.icon(onPressed: () => _pick(false), icon: const Icon(Icons.calendar_today_outlined), label: Text('TO ${_date(_end)}')),
       SizedBox(width: 220, child: DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _categories.contains(_category) ? _category : 'ALL',
         decoration: const InputDecoration(labelText: 'Category'),
-        items: _categories.map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+        items: _categories.map((v) => DropdownMenuItem(value: v, child: Text(v, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(),
         onChanged: (v) async { if (v == null) return; setState(() => _category = v); await _load(); },
       )),
-      SizedBox(width: 180, child: DropdownButtonFormField<String>(
+      SizedBox(width: 260, child: DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _devices.contains(_device) ? _device : 'ALL',
         decoration: const InputDecoration(labelText: 'Kiosk'),
-        items: _devices.map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+        items: _devices.map((v) => DropdownMenuItem(value: v, child: Text(v, maxLines: 1, overflow: TextOverflow.ellipsis))).toList(),
         onChanged: (v) async { if (v == null) return; setState(() => _device = v); await _load(); },
       )),
+      IconButton(
+        tooltip: 'View PDF',
+        onPressed: _loading ? null : _viewPdf,
+        icon: const Icon(Icons.picture_as_pdf_outlined),
+      ),
     ],
   )));
 
@@ -132,11 +158,10 @@ class _ProductSalesPageState extends State<ProductSalesPage> {
       ]),
       const SizedBox(height: 18),
       Card(child: Padding(padding: const EdgeInsets.all(14), child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-        columns: const [DataColumn(label: Text('PRODUCT')), DataColumn(label: Text('CATEGORY')), DataColumn(label: Text('QTY SOLD')), DataColumn(label: Text('TOTAL SALES')), DataColumn(label: Text('AVG PRICE'))],
+        columns: const [DataColumn(label: Text('PRODUCT')), DataColumn(label: Text('CATEGORY')), DataColumn(label: Text('QTY SOLD')), DataColumn(label: Text('TOTAL SALES'))],
         rows: rows.map((r) => DataRow(cells: [
           DataCell(Text(r.name)), DataCell(Text(r.category)), DataCell(Text('${r.quantity}')),
           DataCell(Text(StoreCurrency.format(r.sales))),
-          DataCell(Text(StoreCurrency.format(r.quantity == 0 ? 0 : r.sales / r.quantity))),
         ])).toList(),
       )))),
     ]);

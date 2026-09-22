@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../reporting_api/reporting_api_service.dart';
+import '../reporting_api/reporting_pdf_font.dart';
 
 class StoreDashboardPdfService {
   static Future<Uint8List> build({
@@ -18,6 +19,7 @@ class StoreDashboardPdfService {
     required num payments,
   }) async {
     final pdf = pw.Document(title: 'Bigger Brew Store Dashboard');
+    final theme = await StoreReportingPdfFont.theme();
     final topProducts = [...products]
       ..sort((a, b) => b.totalSales.compareTo(a.totalSales));
     final groupedCategories = <String, ReportingCategorySale>{};
@@ -44,6 +46,7 @@ class StoreDashboardPdfService {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
+        theme: theme,
         margin: const pw.EdgeInsets.all(28),
         build: (context) => [
           pw.Text(

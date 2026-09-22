@@ -1,6 +1,9 @@
 import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'hourly_sale.dart';
+import 'reporting_pdf_service.dart';
+import 'reporting_pdf_viewer.dart';
 
 class HourlySalesPage extends StatefulWidget {
   const HourlySalesPage({super.key});
@@ -121,6 +124,21 @@ class _HourlySalesPageState extends State<HourlySalesPage> {
         ),
       );
 
+  Future<void> _viewPdf() async {
+    if (_loading) return;
+    final filename = 'hourly_sales_${_dateOnly(_startDate)}_${_dateOnly(_endDate)}.pdf';
+    await ReportingPdfViewer.show(
+      context: context,
+      filename: filename,
+      build: (_) => StoreReportingPdfService.buildHourlySales(
+        storeId: 'Store',
+        startDate: _startDate,
+        endDate: _endDate,
+        rows: _rows,
+      ),
+    );
+  }
+
   Widget _filters() => Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -139,6 +157,7 @@ class _HourlySalesPageState extends State<HourlySalesPage> {
                 icon: const Icon(Icons.calendar_today_outlined),
                 label: Text('TO ${_dateOnly(_endDate)}'),
               ),
+              IconButton(tooltip: 'View PDF', onPressed: _loading ? null : _viewPdf, icon: const Icon(Icons.picture_as_pdf_outlined)),
             ],
           ),
         ),
@@ -219,30 +238,3 @@ class _HourlySalesPageState extends State<HourlySalesPage> {
         ),
       );
 }
-
-class HourlySale {
-  const HourlySale({
-    required this.hour,
-    required this.label,
-    required this.transactionCount,
-    required this.itemCount,
-    required this.totalSales,
-  });
-
-  final int hour;
-  final String label;
-  final int transactionCount;
-  final int itemCount;
-  final num totalSales;
-
-  factory HourlySale.fromMap(Map<String, dynamic> map) => HourlySale(
-        hour: _toInt(map['hour']),
-        label: '${map['label'] ?? ''}',
-        transactionCount: _toInt(map['transactionCount']),
-        itemCount: _toInt(map['itemCount']),
-        totalSales: _toNum(map['totalSales']),
-      );
-}
-
-int _toInt(dynamic value) => value is int ? value : int.tryParse('$value') ?? 0;
-num _toNum(dynamic value) => value is num ? value : num.tryParse('$value') ?? 0;
