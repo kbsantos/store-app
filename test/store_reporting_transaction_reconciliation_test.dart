@@ -8,33 +8,35 @@ void main() {
 
   test('reporting uses transaction-authoritative reconciliation', () {
     final sql = File(migration).readAsStringSync();
+    final normalizedSql = sql.replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
 
-    expect(sql, contains('report_reconciled_transaction_items'));
-    expect(sql, contains('transaction_total'));
-    expect(sql, contains('recorded_transaction_item_total'));
-    expect(sql, contains('reconciled_item_total'));
-    expect(sql, contains('abs(recorded_transaction_item_total - transaction_total) <= 0.01'));
-    expect(sql, contains('recorded_item_total * transaction_total'));
-    expect(sql, contains('transaction_total / transaction_item_count'));
-    expect(sql, contains('create or replace view public.report_product_sales'));
-    expect(sql, contains('create or replace view public.report_category_sales'));
+    expect(normalizedSql, contains('report_reconciled_transaction_items'));
+    expect(normalizedSql, contains('transaction_total'));
+    expect(normalizedSql, contains('recorded_transaction_item_total'));
+    expect(normalizedSql, contains('reconciled_item_total'));
+    expect(normalizedSql, contains('abs(recorded_transaction_item_total - transaction_total) <= 0.01'));
+    expect(normalizedSql, contains('recorded_item_total * transaction_total'));
+    expect(normalizedSql, contains('transaction_total / transaction_item_count'));
+    expect(normalizedSql, contains('create or replace view public.report_product_sales'));
+    expect(normalizedSql, contains('create or replace view public.report_category_sales'));
   });
 
   test('product and category reports consume reconciled item sales', () {
     final sql = File(migration).readAsStringSync();
+    final normalizedSql = sql.replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
 
-    final productStart = sql.indexOf(
+    final productStart = normalizedSql.indexOf(
       'create or replace view public.report_product_sales',
     );
-    final categoryStart = sql.indexOf(
+    final categoryStart = normalizedSql.indexOf(
       'create or replace view public.report_category_sales',
     );
 
     expect(productStart, greaterThanOrEqualTo(0));
     expect(categoryStart, greaterThan(productStart));
 
-    final productSql = sql.substring(productStart, categoryStart);
-    final categorySql = sql.substring(categoryStart);
+    final productSql = normalizedSql.substring(productStart, categoryStart);
+    final categorySql = normalizedSql.substring(categoryStart);
 
     expect(productSql, contains('sum(r.reconciled_item_total) as total_sales'));
     expect(categorySql, contains('sum(r.reconciled_item_total) as total_sales'));

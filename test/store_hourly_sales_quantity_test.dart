@@ -8,7 +8,7 @@ void main() {
       'supabase/20260922_store_hourly_sales_quantity_fix.sql',
     ).readAsStringSync();
 
-    expect(sql, contains('sum(ti.quantity)::int'));
+    expect(sql, contains('coalesce(sum(ti.quantity), 0)::int as item_count'));
     expect(sql, contains('coalesce(sum(f.total), 0) as total_sales'));
     expect(sql, contains("'totalSales', coalesce(a.total_sales, 0)"));
     expect(sql, contains("count(*)::int as transaction_count"));
