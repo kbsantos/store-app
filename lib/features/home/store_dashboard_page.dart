@@ -1,5 +1,6 @@
-import '../../core/currency/store_currency.dart';
 import 'package:flutter/material.dart';
+
+import '../../core/currency/store_currency.dart';
 import 'package:printing/printing.dart';
 
 import 'pdf_download_stub.dart'
@@ -20,23 +21,28 @@ class StoreDashboardPage extends StatefulWidget {
 class _StoreDashboardPageState extends State<StoreDashboardPage> {
   final _auth = const StoreManagementAuth();
   final _api = ReportingApiService();
-  DateTime _start = DateTime.now();
-  DateTime _end = DateTime.now();
+  late DateTime _selectedMonth;
   bool _loading = false;
   String? _error;
   List<ReportingDailySale> _daily = const [];
   List<ReportingProductSale> _products = const [];
+  List<Map<String, dynamic>> _payments = const [];
+  num _yesterdaySales = 0;
   List<ReportingCategorySale> _categories = const [];
   List<ReportingDeviceSale> _devices = const [];
-  List<Map<String, dynamic>> _payments = const [];
   Map<String, dynamic>? _integrity;
   bool _integrityLoading = false;
 
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _selectedMonth = DateTime(now.year, now.month);
     _load();
   }
+
+  DateTime get _start => DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+  DateTime get _end => DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
 
   String _date(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -130,6 +136,10 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
         _api.getCategorySales(startDate: _start, endDate: _end),
         _api.getDeviceSales(startDate: _start, endDate: _end),
         _getPayments(),
+        _api.getDailySales(
+          startDate: DateTime.now().subtract(const Duration(days: 1)),
+          endDate: DateTime.now().subtract(const Duration(days: 1)),
+        ),
       ]);
       if (!mounted) return;
       setState(() {
@@ -138,6 +148,8 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
         _categories = results[2] as List<ReportingCategorySale>;
         _devices = results[3] as List<ReportingDeviceSale>;
         _payments = results[4] as List<Map<String, dynamic>>;
+        final yesterdayRows = results[5] as List<ReportingDailySale>;
+        _yesterdaySales = yesterdayRows.fold<num>(0, (sum, row) => sum + row.totalSales);
       });
     } catch (error) {
       if (mounted) setState(() => _error = error.toString());
@@ -146,110 +158,334 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
     }
   }
 
-  Future<void> _pick(bool start) async {
+  Future<void> _changeMonth(int delta) async {
+    final next = DateTime(_selectedMonth.year, _selectedMonth.month + delta);
+    final now = DateTime.now();
+    if (next.isAfter(DateTime(now.year, now.month))) return;
+    setState(() => _selectedMonth = next);
+    await _load();
+  }
+
+  Future<void> _pickMonth() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: start ? _start : _end,
+      initialDate: _selectedMonth,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: 'SELECT MONTH',
     );
     if (picked == null || !mounted) return;
-    setState(() {
-      if (start) {
-        _start = picked;
-        if (_start.isAfter(_end)) _end = picked;
-      } else {
-        _end = picked;
-        if (_end.isBefore(_start)) _start = picked;
-      }
-    });
+    setState(() => _selectedMonth = DateTime(picked.year, picked.month));
     await _load();
+  }
+
+  String _monthLabel(DateTime d) {
+    const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return '${names[d.month - 1]} ${d.year}';
   }
 
   int get _orders => _daily.fold(0, (s, r) => s + r.transactionCount);
   num get _sales => _daily.fold<num>(0, (s, r) => s + r.totalSales);
   int get _items => _products.fold(0, (s, r) => s + r.quantitySold);
+  num get _averageOrder => _orders == 0 ? 0 : _sales / _orders;
   num get _paid => _payments.fold<num>(0, (s, r) => s + _num(r['totalAmount']));
 
-  List<ReportingProductSale> get _topProducts {
-    final rows = [..._products]
-      ..sort((a, b) => b.totalSales.compareTo(a.totalSales));
+  List<_ProductTotal> get _topProducts {
+    final grouped = <String, _ProductTotal>{};
+    for (final row in _products) {
+      final key = row.productId.isEmpty ? row.productName : row.productId;
+      final existing = grouped[key];
+      grouped[key] = _ProductTotal(
+        productId: key,
+        productName: row.productName,
+        category: row.category,
+        quantity: (existing?.quantity ?? 0) + row.quantitySold,
+        sales: (existing?.sales ?? 0) + row.totalSales,
+      );
+    }
+    final rows = grouped.values.toList()..sort((a, b) => b.quantity.compareTo(a.quantity));
     return rows.take(5).toList(growable: false);
   }
 
-  List<ReportingCategorySale> get _topCategories {
-    final grouped = <String, ReportingCategorySale>{};
-    for (final row in _categories) {
-      final existing = grouped[row.category];
-      if (existing == null) {
-        grouped[row.category] = row;
-      } else {
-        grouped[row.category] = ReportingCategorySale(
-          storeId: row.storeId,
-          deviceId: row.deviceId,
-          salesDate: row.salesDate,
-          category: row.category,
-          quantitySold: existing.quantitySold + row.quantitySold,
-          totalSales: existing.totalSales + row.totalSales,
-        );
-      }
+  List<_DailyPoint> get _dailyPoints {
+    final byDay = <int, num>{};
+    for (final row in _daily) {
+      byDay[row.salesDate.day] = (byDay[row.salesDate.day] ?? 0) + row.totalSales;
     }
-    final rows = grouped.values.toList()
-      ..sort((a, b) => b.totalSales.compareTo(a.totalSales));
-    return rows.take(5).toList(growable: false);
+    final days = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
+    return List.generate(days, (i) => _DailyPoint(day: i + 1, sales: byDay[i + 1] ?? 0));
+  }
+
+  String get _topProductName => _topProducts.isEmpty ? '—' : _topProducts.first.productName;
+
+  List<_DailyDetail> get _dailyDetails {
+    final byDate = <DateTime, _DailyDetail>{};
+    for (final row in _daily) {
+      final date = DateTime(row.salesDate.year, row.salesDate.month, row.salesDate.day);
+      final existing = byDate[date];
+      byDate[date] = _DailyDetail(
+        date: date,
+        orders: (existing?.orders ?? 0) + row.transactionCount,
+        sales: (existing?.sales ?? 0) + row.totalSales,
+      );
+    }
+    final days = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
+    return List.generate(days, (index) {
+      final date = DateTime(_selectedMonth.year, _selectedMonth.month, index + 1);
+      return byDate[date] ?? _DailyDetail(date: date, orders: 0, sales: 0);
+    }, growable: false);
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFFF5F2ED),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF171717),
-          foregroundColor: Colors.white,
-          title: const Text(
-            'STORE DASHBOARD',
-            style: TextStyle(fontWeight: FontWeight.w900),
-          ),
-          actions: [
-            IconButton(
-              onPressed: _loading ? null : _load,
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Refresh',
-            ),
+    backgroundColor: const Color(0xFFF5F2ED),
+    appBar: AppBar(
+      backgroundColor: const Color(0xFF24180F),
+      foregroundColor: Colors.white,
+      title: const Text('BIGGER BREW STORE', style: TextStyle(fontWeight: FontWeight.w900)),
+      actions: [
+        IconButton(onPressed: _loading ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Refresh'),
+        PopupMenuButton<String>(
+          onSelected: (v) { if (v == 'integrity') _checkIntegrity(); if (v == 'pdf') _viewPdf(); },
+          itemBuilder: (_) => const [
+            PopupMenuItem(value: 'integrity', child: Text('Check reporting integrity')),
+            PopupMenuItem(value: 'pdf', child: Text('View PDF report')),
           ],
         ),
-        body: RefreshIndicator(
-          onRefresh: _load,
-          child: ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              const Icon(Icons.dashboard_outlined, size: 64, color: Color(0xFFC69214)),
-              const SizedBox(height: 6),
-              const Text(
-                'STORE DASHBOARD',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${_auth.storeId ?? 'Store'}  •  ${_date(_start)}${_start == _end ? '' : ' to ${_date(_end)}'}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 18),
-              _filters(),
-              const SizedBox(height: 10),
-              if (_error != null) _messageCard('DASHBOARD ERROR', _error!),
-              if (_loading)
-                const Padding(
-                  padding: EdgeInsets.all(36),
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (_error == null)
-                _content(),
-            ],
-          ),
-        ),
+      ],
+    ),
+    body: RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(padding: const EdgeInsets.all(24), children: [
+        LayoutBuilder(builder: (context, c) {
+          final compact = c.maxWidth < 700;
+          final header = Row(children: [
+            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Dashboard', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+              SizedBox(height: 3),
+              Text('Sales overview and top products', style: TextStyle(color: Colors.black54, fontSize: 15)),
+            ])),
+            if (!compact) _monthSelector(),
+          ]);
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [header, if (compact) ...[const SizedBox(height: 14), _monthSelector()], const SizedBox(height: 20)]);
+        }),
+        if (_error != null) _messageCard('DASHBOARD ERROR', _error!),
+        if (_loading) const Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator())) else _dashboardContent(),
+      ]),
+    ),
+  );
+
+  Widget _monthSelector() {
+    final now = DateTime.now();
+    final current = _selectedMonth.year == now.year && _selectedMonth.month == now.month;
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      IconButton.filledTonal(onPressed: _loading ? null : () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
+      const SizedBox(width: 8),
+      OutlinedButton.icon(
+        onPressed: _loading ? null : _pickMonth,
+        icon: const Icon(Icons.calendar_month_outlined),
+        label: Text(_monthLabel(_selectedMonth), style: const TextStyle(fontWeight: FontWeight.w800)),
+        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14)),
+      ),
+      const SizedBox(width: 8),
+      IconButton.filledTonal(onPressed: (_loading || current) ? null : () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),
+    ]);
+  }
+
+  Widget _dashboardContent() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    LayoutBuilder(builder: (context, c) {
+      final columns = c.maxWidth >= 1050 ? 4 : c.maxWidth >= 650 ? 2 : 1;
+      final width = (c.maxWidth - (columns - 1) * 14) / columns;
+      return Wrap(spacing: 14, runSpacing: 14, children: [
+        SizedBox(width: width, child: _metricCard('TOTAL SALES', _money(_sales), Icons.bar_chart_rounded, 'Selected month')),
+        SizedBox(width: width, child: _metricCard('TOTAL ORDERS', '$_orders', Icons.shopping_cart_outlined, 'Completed transactions')),
+        SizedBox(width: width, child: _metricCard('TOP PRODUCT', _topProductName, Icons.emoji_events_outlined, _topProducts.isEmpty ? 'No product sales' : '${_topProducts.first.quantity} sold')),
+        SizedBox(width: width, child: _metricCard("YESTERDAY'S SALES", _money(_yesterdaySales), Icons.today_outlined, _date(DateTime.now().subtract(const Duration(days: 1))))),
+      ]);
+    }),
+    const SizedBox(height: 18),
+    LayoutBuilder(builder: (context, c) {
+      if (c.maxWidth >= 1000) return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(flex: 3, child: _dailySalesCard()), const SizedBox(width: 18), Expanded(flex: 2, child: _topProductsCard())]);
+      return Column(children: [_dailySalesCard(), const SizedBox(height: 18), _topProductsCard()]);
+    }),
+    const SizedBox(height: 18),
+    LayoutBuilder(builder: (context, c) {
+      if (c.maxWidth >= 1000) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _dailySalesDetailsCard()),
+            const SizedBox(width: 18),
+            Expanded(child: _productDetailsCard()),
+          ],
+        );
+      }
+      return Column(
+        children: [
+          _dailySalesDetailsCard(),
+          const SizedBox(height: 18),
+          _productDetailsCard(),
+        ],
       );
+    }),
+  ]);
+
+  Widget _metricCard(String label, String value, IconData icon, String detail) => Card(elevation: 0, child: Padding(padding: const EdgeInsets.all(18), child: Row(children: [
+    Container(width: 48, height: 48, decoration: BoxDecoration(color: const Color(0xFFF3E8D8), borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: const Color(0xFF7B4B2A))),
+    const SizedBox(width: 14),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700, fontSize: 12)),
+      const SizedBox(height: 4),
+      Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
+      const SizedBox(height: 3),
+      Text(detail, style: const TextStyle(color: Colors.black45, fontSize: 12)),
+    ])),
+  ])));
+
+  Widget _dailySalesCard() => Card(elevation: 0, child: Padding(padding: const EdgeInsets.fromLTRB(20, 18, 20, 12), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    Row(children: [const Icon(Icons.bar_chart_rounded, color: Color(0xFF7B4B2A)), const SizedBox(width: 8), const Expanded(child: Text('Daily Sales', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900))), Text(_monthLabel(_selectedMonth), style: const TextStyle(color: Colors.black54))]),
+    const SizedBox(height: 18),
+    SizedBox(height: 330, child: _dailyPoints.every((p) => p.sales == 0) ? const Center(child: Text('No sales for the selected month.', style: TextStyle(color: Colors.black54))) : _DailySalesChart(points: _dailyPoints, currencySymbol: StoreCurrency.symbol, selectedMonth: _selectedMonth)),
+  ])));
+
+  Widget _topProductsCard() {
+    final rows = _topProducts;
+    final maxQty = rows.isEmpty ? 1 : rows.map((r) => r.quantity).reduce((a, b) => a > b ? a : b);
+    return Card(elevation: 0, child: Padding(padding: const EdgeInsets.fromLTRB(20, 18, 20, 18), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Row(children: [const Icon(Icons.emoji_events_outlined, color: Color(0xFF7B4B2A)), const SizedBox(width: 8), const Expanded(child: Text('Top Products', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900))), Text(_monthLabel(_selectedMonth), style: const TextStyle(color: Colors.black54))]),
+      const SizedBox(height: 14),
+      if (rows.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 50), child: Center(child: Text('No product sales for the selected month.', style: TextStyle(color: Colors.black54))))
+      else ...rows.asMap().entries.map((e) {
+        final row = e.value;
+        final share = _items == 0 ? 0.0 : row.quantity / _items;
+        return Padding(padding: const EdgeInsets.symmetric(vertical: 7), child: Row(children: [
+          SizedBox(width: 24, child: Text('${e.key + 1}', style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.black54))),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [Expanded(child: Text(row.productName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800))), Text('${row.quantity} sold', style: const TextStyle(color: Colors.black54, fontSize: 12)), const SizedBox(width: 10), Text('${(share * 100).round()}%', style: const TextStyle(color: Colors.black54, fontSize: 12))]),
+            const SizedBox(height: 7),
+            ClipRRect(borderRadius: BorderRadius.circular(10), child: LinearProgressIndicator(value: row.quantity / maxQty, minHeight: 8, backgroundColor: const Color(0xFFE9E5DF), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8A5A38))),),
+          ])),
+        ]));
+      }),
+    ])));
+  }
+
+  Widget _dailySalesDetailsCard() {
+    final rows = _dailyDetails;
+    return Card(
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        leading: const Icon(Icons.calendar_view_day_outlined, color: Color(0xFF7B4B2A)),
+        title: const Text('Daily Sales Details', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+        subtitle: Text(_monthLabel(_selectedMonth), style: const TextStyle(color: Colors.black54)),
+        children: [
+          if (rows.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(18),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('No daily sales for the selected month.', style: TextStyle(color: Colors.black54)),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columnSpacing: 28,
+                headingRowColor: const WidgetStatePropertyAll(Color(0xFFF0EEEA)),
+                columns: const [
+                  DataColumn(label: Text('DATE')),
+                  DataColumn(label: Text('DAY')),
+                  DataColumn(label: Text('ORDERS')),
+                  DataColumn(label: Text('TOTAL SALES')),
+                ],
+                rows: rows.map((row) {
+                  final date = row.date;
+                  return DataRow(cells: [
+                    DataCell(Text('${_monthName(date.month)} ${date.day}, ${date.year}', style: const TextStyle(fontWeight: FontWeight.w700))),
+                    DataCell(Text(_weekdayName(date.weekday))),
+                    DataCell(Text('${row.orders}')),
+                    DataCell(Text(_money(row.sales), style: const TextStyle(fontWeight: FontWeight.w800))),
+                  ]);
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _monthName(int month) {
+    const names = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return names[month - 1];
+  }
+
+  String _weekdayName(int weekday) {
+    const names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return names[weekday - 1];
+  }
+
+  Widget _productDetailsCard() {
+    final rows = _topProducts;
+    return Card(
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        leading: const Icon(Icons.format_list_bulleted, color: Color(0xFF7B4B2A)),
+        title: const Text('Product Sales Details', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+        subtitle: Text(_monthLabel(_selectedMonth), style: const TextStyle(color: Colors.black54)),
+        children: [
+          if (rows.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(18),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('No product sales for the selected month.', style: TextStyle(color: Colors.black54)),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columnSpacing: 24,
+                headingRowColor: const WidgetStatePropertyAll(Color(0xFFF0EEEA)),
+                columns: const [
+                  DataColumn(label: Text('#')),
+                  DataColumn(label: Text('PRODUCT')),
+                  DataColumn(label: Text('CATEGORY')),
+                  DataColumn(label: Text('QUANTITY SOLD')),
+                  DataColumn(label: Text('SALES AMOUNT')),
+                  DataColumn(label: Text('% OF TOTAL')),
+                ],
+                rows: rows.asMap().entries.map((e) {
+                  final row = e.value;
+                  final pct = _sales == 0 ? 0 : row.sales / _sales * 100;
+                  return DataRow(cells: [
+                    DataCell(Text('${e.key + 1}')),
+                    DataCell(Text(row.productName, style: const TextStyle(fontWeight: FontWeight.w700))),
+                    DataCell(Text(_displayCategoryName(row.category))),
+                    DataCell(Text('${row.quantity}')),
+                    DataCell(Text(_money(row.sales))),
+                    DataCell(Text('${pct.toStringAsFixed(0)}%')),
+                  ]);
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _viewPdf() async {
     if (_loading) return;
@@ -262,9 +498,6 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
           width: 1000,
           height: MediaQuery.sizeOf(dialogContext).height * 0.9,
           child: PdfPreview(
-            // Generate a fresh Uint8List for every preview request. Reusing a
-            // previously returned buffer can cause Flutter Web's worker to
-            // detach the ArrayBuffer and trigger DataCloneError on refresh.
             build: (_) => StoreDashboardPdfService.build(
               storeId: _auth.storeId ?? 'Store',
               startDate: _start,
@@ -306,332 +539,8 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
   String _displayCategoryName(String value) {
     final normalized = value.trim().replaceAll(RegExp(r'[_-]+'), ' ');
     if (normalized.isEmpty) return 'Uncategorized';
-    return normalized.split(RegExp(r'\s+')).map((word) {
-      if (word.isEmpty) return word;
-      return '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}';
-    }).join(' ');
+    return normalized.split(RegExp(r'\s+')).map((word) => word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}').join(' ');
   }
-
-  Widget _filters() => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final dateControls = Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () => _pick(true),
-                    icon: const Icon(Icons.calendar_today_outlined),
-                    label: Text('FROM ${_date(_start)}'),
-                  ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: () => _pick(false),
-                    icon: const Icon(Icons.calendar_today_outlined),
-                    label: Text('TO ${_date(_end)}'),
-                  ),
-                ],
-              );
-
-              final actionControls = Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Tooltip(
-                    message: _integrityLoading
-                        ? 'Checking reporting integrity'
-                        : 'Check reporting integrity',
-                    child: IconButton(
-                      onPressed: _integrityLoading ? null : _checkIntegrity,
-                      icon: _integrityLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.fact_check_outlined),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Tooltip(
-                    message: 'View PDF',
-                    child: IconButton(
-                      onPressed: _loading ? null : _viewPdf,
-                      icon: const Icon(Icons.picture_as_pdf_outlined),
-                    ),
-                  ),
-                ],
-              );
-
-              if (constraints.maxWidth < 700) {
-                return Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [dateControls, actionControls],
-                );
-              }
-
-              return Row(
-                children: [
-                  dateControls,
-                  const Spacer(),
-                  actionControls,
-                ],
-              );
-            },
-          ),
-        ),
-      );
-
-  Widget _content() => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final columns = constraints.maxWidth >= 900 ? 4 : 2;
-              final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  SizedBox(width: width, child: _metric('SALES', _money(_sales), Icons.payments_outlined)),
-                  SizedBox(width: width, child: _metric('ORDERS', '$_orders', Icons.receipt_long_outlined)),
-                  SizedBox(width: width, child: _metric('ITEMS SOLD', '$_items', Icons.inventory_2_outlined)),
-                  SizedBox(width: width, child: _metric('PAYMENTS', _money(_paid), Icons.account_balance_wallet_outlined)),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 18),
-          _section('TOP PRODUCTS', _topProducts.isEmpty
-              ? _empty('No product sales for the selected dates.')
-              : Column(children: _topProducts.map((r) => _row(r.productName, '${r.quantitySold} sold', _money(r.totalSales))).toList())),
-          const SizedBox(height: 14),
-          _section('CATEGORY SALES', _topCategories.isEmpty
-              ? _empty('No category sales for the selected dates.')
-              : Column(children: _topCategories.map((r) => _categoryRow(r)).toList())),
-          const SizedBox(height: 14),
-          _section('KIOSK SALES', _devices.isEmpty
-              ? _empty('No kiosk sales for the selected dates.')
-              : Column(children: _deviceRows())),
-          const SizedBox(height: 14),
-          _section('DAILY SALES', _daily.isEmpty
-              ? _empty('No sales for the selected dates.')
-              : Column(children: _daily.map((r) => _row(_date(r.salesDate), '${r.transactionCount} orders', _money(r.totalSales))).toList())),
-        ],
-      );
-
-  Widget _categoryRow(ReportingCategorySale row) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: InkWell(
-          onTap: _loading ? null : () => _showCategoryDrillDown(row.category),
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _displayCategoryName(row.category),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                Text('${row.quantitySold} items', style: const TextStyle(color: Colors.black54)),
-                const SizedBox(width: 18),
-                Text(_money(row.totalSales), style: const TextStyle(fontWeight: FontWeight.w900)),
-                const SizedBox(width: 8),
-                const Icon(Icons.chevron_right, size: 20, color: Colors.black54),
-              ],
-            ),
-          ),
-        ),
-      );
-
-  Future<void> _showCategoryDrillDown(String category) async {
-    final selectedCategory = category.trim().isEmpty ? 'Uncategorized' : category.trim();
-    final categoryRows = _products.where((row) => row.category == category).toList(growable: false);
-    final grouped = <String, _DashboardProductTotal>{};
-    for (final row in categoryRows) {
-      final key = row.productId.isEmpty ? row.productName : row.productId;
-      final existing = grouped[key];
-      grouped[key] = _DashboardProductTotal(
-        productName: row.productName,
-        quantity: (existing?.quantity ?? 0) + row.quantitySold,
-        sales: (existing?.sales ?? 0) + row.totalSales,
-      );
-    }
-    final products = grouped.values.toList()..sort((a, b) => b.sales.compareTo(a.sales));
-    final categoryTotal = _categories
-        .where((row) => row.category == category)
-        .fold<num>(0, (sum, row) => sum + row.totalSales);
-    final categoryQuantity = _categories
-        .where((row) => row.category == category)
-        .fold<int>(0, (sum, row) => sum + row.quantitySold);
-    final mismatch = categoryTotal > _sales + 0.009;
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('${_displayCategoryName(selectedCategory)} SALES'),
-        content: SizedBox(
-          width: 760,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('DATE RANGE: ${_date(_start)}${_start == _end ? '' : ' to ${_date(_end)}'}'),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: _drillMetric('ITEMS', '$categoryQuantity')),
-                    const SizedBox(width: 10),
-                    Expanded(child: _drillMetric('CATEGORY SALES', _money(categoryTotal))),
-                    const SizedBox(width: 10),
-                    Expanded(child: _drillMetric('DASHBOARD SALES', _money(_sales))),
-                  ],
-                ),
-                if (mismatch) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.black26),
-                    ),
-                    child: const Text(
-                      'WARNING: This category total is greater than the dashboard sales total. This indicates a reporting-data mismatch and is not proof of additional actual sales.',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                const Text('PRODUCT SALES', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
-                const Divider(),
-                if (products.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text('No product rows are currently tagged with this category.'),
-                  )
-                else
-                  ...products.map(
-                    (product) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 7),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w700))),
-                          Text('${product.quantity} sold', style: const TextStyle(color: Colors.black54)),
-                          const SizedBox(width: 18),
-                          Text(_money(product.sales), style: const TextStyle(fontWeight: FontWeight.w900)),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('CLOSE')),
-        ],
-      ),
-    );
-  }
-
-  Widget _drillMetric(String label, String value) => Card(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
-            ],
-          ),
-        ),
-      );
-
-  List<Widget> _deviceRows() {
-    final grouped = <String, ReportingDeviceSale>{};
-    for (final row in _devices) {
-      final key = row.deviceId.isEmpty ? 'Unassigned' : row.deviceId;
-      final existing = grouped[key];
-      if (existing == null) {
-        grouped[key] = row;
-      } else {
-        grouped[key] = ReportingDeviceSale(
-          storeId: row.storeId,
-          deviceId: row.deviceId,
-          salesDate: row.salesDate,
-          transactionCount: existing.transactionCount + row.transactionCount,
-          subtotal: existing.subtotal + row.subtotal,
-          discount: existing.discount + row.discount,
-          totalSales: existing.totalSales + row.totalSales,
-        );
-      }
-    }
-    final rows = grouped.values.toList()..sort((a, b) => b.totalSales.compareTo(a.totalSales));
-    return rows.map((r) => _row(r.deviceId.isEmpty ? 'Unassigned' : r.deviceId, '${r.transactionCount} orders', _money(r.totalSales))).toList();
-  }
-
-  Widget _metric(String label, String value, IconData icon) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: const Color(0xFF171717),
-                foregroundColor: Colors.white,
-                child: Icon(icon),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 4),
-                    Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-
-  Widget _section(String title, Widget child) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-              const Divider(),
-              child,
-            ],
-          ),
-        ),
-      );
-
-  Widget _row(String title, String detail, String amount) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700))),
-            Text(detail, style: const TextStyle(color: Colors.black54)),
-            const SizedBox(width: 18),
-            Text(amount, style: const TextStyle(fontWeight: FontWeight.w900)),
-          ],
-        ),
-      );
-
-  Widget _empty(String text) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(text, style: const TextStyle(color: Colors.black54)),
-      );
 
   Widget _messageCard(String title, String message) => Card(
         child: Padding(
@@ -648,9 +557,204 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
 }
 
 
-class _DashboardProductTotal {
-  const _DashboardProductTotal({required this.productName, required this.quantity, required this.sales});
-  final String productName;
+
+class _DailyDetail {
+  const _DailyDetail({required this.date, required this.orders, required this.sales});
+  final DateTime date;
+  final int orders;
+  final num sales;
+}
+
+class _ProductTotal {
+  const _ProductTotal({required this.productId, required this.productName, required this.category, required this.quantity, required this.sales});
+  final String productId, productName, category;
   final int quantity;
   final num sales;
+}
+
+class _DailyPoint {
+  const _DailyPoint({required this.day, required this.sales});
+  final int day;
+  final num sales;
+}
+
+class _DailySalesChart extends StatefulWidget {
+  const _DailySalesChart({required this.points, required this.currencySymbol, required this.selectedMonth});
+
+  final List<_DailyPoint> points;
+  final String currencySymbol;
+  final DateTime selectedMonth;
+
+  @override
+  State<_DailySalesChart> createState() => _DailySalesChartState();
+}
+
+class _DailySalesChartState extends State<_DailySalesChart> {
+  int? _hoveredIndex;
+
+  void _setIndexFromPosition(Offset localPosition, Size size) {
+    const left = 58.0;
+    const right = 8.0;
+    final width = size.width - left - right;
+    if (width <= 0 || widget.points.isEmpty) return;
+
+    final x = (localPosition.dx - left).clamp(0.0, width);
+    final index = widget.points.length == 1
+        ? 0
+        : ((x / width) * (widget.points.length - 1)).round().clamp(0, widget.points.length - 1);
+    if (_hoveredIndex != index) setState(() => _hoveredIndex = index);
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, 330);
+          return MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onExit: (_) => setState(() => _hoveredIndex = null),
+            onHover: (event) => _setIndexFromPosition(event.localPosition, size),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (details) => _setIndexFromPosition(details.localPosition, size),
+              child: CustomPaint(
+                size: size,
+                painter: _DailySalesChartPainter(
+                  points: widget.points,
+                  currencySymbol: widget.currencySymbol,
+                  selectedMonth: widget.selectedMonth,
+                  hoveredIndex: _hoveredIndex,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+}
+
+class _DailySalesChartPainter extends CustomPainter {
+  const _DailySalesChartPainter({
+    required this.points,
+    required this.currencySymbol,
+    required this.selectedMonth,
+    required this.hoveredIndex,
+  });
+
+  final List<_DailyPoint> points;
+  final String currencySymbol;
+  final DateTime selectedMonth;
+  final int? hoveredIndex;
+
+  static const _left = 58.0;
+  static const _right = 8.0;
+  static const _top = 12.0;
+  static const _bottom = 40.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final width = size.width - _left - _right;
+    final height = size.height - _top - _bottom;
+    final maxValue = points.fold<num>(0, (m, p) => p.sales > m ? p.sales : m).toDouble();
+    final maxY = maxValue <= 0 ? 1.0 : maxValue;
+    final grid = Paint()..color = const Color(0xFFE6E2DC)..strokeWidth = 1;
+    final line = Paint()..color = const Color(0xFF8A5A38)..style = PaintingStyle.stroke..strokeWidth = 2.6..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
+    final fill = Paint()..color = const Color(0x338A5A38);
+    const labelStyle = TextStyle(color: Colors.black54, fontSize: 10);
+
+    for (var i = 0; i <= 4; i++) {
+      final f = i / 4;
+      final y = _top + height * (1 - f);
+      canvas.drawLine(Offset(_left, y), Offset(_left + width, y), grid);
+      final value = maxY * f;
+      final label = value >= 1000 ? '$currencySymbol${(value / 1000).toStringAsFixed(value >= 10000 ? 0 : 1)}k' : '$currencySymbol${value.toStringAsFixed(0)}';
+      _text(canvas, label, Offset(0, y - 7), labelStyle, _left - 8);
+    }
+
+    final path = Path();
+    final area = Path();
+    for (var i = 0; i < points.length; i++) {
+      final x = _xFor(i, width);
+      final y = _yFor(points[i], height, maxY);
+      if (i == 0) {
+        path.moveTo(x, y);
+        area.moveTo(x, _top + height);
+        area.lineTo(x, y);
+      } else {
+        path.lineTo(x, y);
+        area.lineTo(x, y);
+      }
+    }
+    if (points.isNotEmpty) {
+      final x = _xFor(points.length - 1, width);
+      area.lineTo(x, _top + height);
+      area.close();
+    }
+    canvas.drawPath(area, fill);
+    canvas.drawPath(path, line);
+
+    final dot = Paint()..color = const Color(0xFF8A5A38);
+    for (var i = 0; i < points.length; i++) {
+      if (points[i].sales == 0) continue;
+      final point = Offset(_xFor(i, width), _yFor(points[i], height, maxY));
+      canvas.drawCircle(point, i == hoveredIndex ? 5.5 : 3.2, dot);
+    }
+
+    final every = points.length <= 15 ? 2 : 3;
+    for (var i = 0; i < points.length; i++) {
+      if (i != 0 && i != points.length - 1 && i % every != 0) continue;
+      final x = _xFor(i, width);
+      _text(canvas, '${points[i].day}', Offset(x - 7, _top + height + 10), labelStyle, 18);
+    }
+    _text(canvas, 'Day of Month', Offset(_left + width / 2 - 35, size.height - 18), labelStyle, 80);
+
+    if (hoveredIndex != null && hoveredIndex! >= 0 && hoveredIndex! < points.length) {
+      _drawTooltip(canvas, size, width, height, maxY, hoveredIndex!);
+    }
+  }
+
+  double _xFor(int index, double width) => _left + (points.length == 1 ? width / 2 : width * index / (points.length - 1));
+
+  double _yFor(_DailyPoint point, double height, double maxY) => _top + height * (1 - point.sales.toDouble() / maxY);
+
+  void _drawTooltip(Canvas canvas, Size size, double width, double height, double maxY, int index) {
+    final point = points[index];
+    final x = _xFor(index, width);
+    final y = _yFor(point, height, maxY);
+    final date = DateTime(selectedMonth.year, selectedMonth.month, point.day);
+    final dateLabel = '${_monthName(date.month)} ${date.day}, ${date.year}';
+    final salesLabel = 'Total Sales: ${StoreCurrency.format(point.sales)}';
+
+    const titleStyle = TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700);
+    const valueStyle = TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900);
+    final titlePainter = TextPainter(text: TextSpan(text: dateLabel, style: titleStyle), textDirection: TextDirection.ltr)..layout();
+    final valuePainter = TextPainter(text: TextSpan(text: salesLabel, style: valueStyle), textDirection: TextDirection.ltr)..layout();
+    final boxWidth = [titlePainter.width, valuePainter.width].reduce((a, b) => a > b ? a : b) + 24;
+    const boxHeight = 58.0;
+    final boxX = (x - boxWidth / 2).clamp(4.0, size.width - boxWidth - 4.0);
+    final boxY = (y - boxHeight - 14).clamp(4.0, size.height - boxHeight - 4.0);
+
+    final box = RRect.fromRectAndRadius(Rect.fromLTWH(boxX, boxY, boxWidth, boxHeight), const Radius.circular(8));
+    canvas.drawRRect(box, Paint()..color = const Color(0xFF2D2119));
+    titlePainter.paint(canvas, Offset(boxX + 12, boxY + 8));
+    valuePainter.paint(canvas, Offset(boxX + 12, boxY + 30));
+
+    final guide = Paint()..color = const Color(0x668A5A38)..strokeWidth = 1;
+    canvas.drawLine(Offset(x, _top), Offset(x, _top + height), guide);
+  }
+
+  String _monthName(int month) {
+    const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return names[month - 1];
+  }
+
+  void _text(Canvas canvas, String value, Offset offset, TextStyle style, double maxWidth) {
+    final p = TextPainter(text: TextSpan(text: value, style: style), textDirection: TextDirection.ltr, maxLines: 1)..layout(maxWidth: maxWidth);
+    p.paint(canvas, offset);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DailySalesChartPainter oldDelegate) =>
+      oldDelegate.points != points ||
+      oldDelegate.currencySymbol != currencySymbol ||
+      oldDelegate.selectedMonth != selectedMonth ||
+      oldDelegate.hoveredIndex != hoveredIndex;
 }

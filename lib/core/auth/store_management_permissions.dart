@@ -18,6 +18,12 @@ class StoreManagementPermissions {
   bool get canResetDatabase => forRole(auth.role).databaseReset;
   bool get canManageUsers => forRole(auth.role).users;
   bool get canCompleteEod => forRole(auth.role).completeEod;
+  bool get canManageAdminRoles => auth.role == 'owner';
+  bool get canDeleteUsers => auth.role == 'owner';
+
+  /// Returns the roles the current user is allowed to assign. The backend
+  /// enforces the same rule; this only keeps the UI from offering invalid choices.
+  List<String> assignableRoles() => forRole(auth.role).assignableRoles;
 
   bool canManageFunction(String function) {
     switch (function) {
@@ -48,9 +54,9 @@ class StoreManagementPermissions {
   static StoreManagementRolePermissions forRole(String role) {
     switch (role.trim().toLowerCase()) {
       case 'owner':
-        return const StoreManagementRolePermissions.all();
+        return const StoreManagementRolePermissions.owner();
       case 'admin':
-        return const StoreManagementRolePermissions.all();
+        return const StoreManagementRolePermissions.admin();
       case 'manager':
         return const StoreManagementRolePermissions.manager();
       case 'editor':
@@ -72,9 +78,10 @@ class StoreManagementRolePermissions {
     required this.databaseReset,
     required this.users,
     required this.completeEod,
+    required this.assignableRoles,
   });
 
-  const StoreManagementRolePermissions.all()
+  const StoreManagementRolePermissions.owner()
       : catalog = true,
         inventory = true,
         devices = true,
@@ -82,7 +89,19 @@ class StoreManagementRolePermissions {
         operatingHours = true,
         databaseReset = true,
         users = true,
-        completeEod = true;
+        completeEod = true,
+        assignableRoles = const ['staff', 'editor', 'manager', 'admin', 'owner'];
+
+  const StoreManagementRolePermissions.admin()
+      : catalog = true,
+        inventory = true,
+        devices = true,
+        storeProfile = true,
+        operatingHours = true,
+        databaseReset = false,
+        users = true,
+        completeEod = true,
+        assignableRoles = const ['staff', 'editor', 'manager'];
 
   const StoreManagementRolePermissions.manager()
       : catalog = true,
@@ -92,17 +111,19 @@ class StoreManagementRolePermissions {
         operatingHours = false,
         databaseReset = false,
         users = false,
-        completeEod = true;
+        completeEod = true,
+        assignableRoles = const ['staff', 'editor'];
 
   const StoreManagementRolePermissions.editor()
-      : catalog = false,
+      : catalog = true,
         inventory = false,
         devices = false,
         storeProfile = false,
         operatingHours = false,
         databaseReset = false,
         users = false,
-        completeEod = false;
+        completeEod = false,
+        assignableRoles = const [];
 
   const StoreManagementRolePermissions.staff()
       : catalog = false,
@@ -112,7 +133,8 @@ class StoreManagementRolePermissions {
         operatingHours = false,
         databaseReset = false,
         users = false,
-        completeEod = false;
+        completeEod = false,
+        assignableRoles = const [];
 
   final bool catalog;
   final bool inventory;
@@ -122,4 +144,6 @@ class StoreManagementRolePermissions {
   final bool databaseReset;
   final bool users;
   final bool completeEod;
+  final List<String> assignableRoles;
 }
+

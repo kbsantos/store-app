@@ -26,7 +26,7 @@ class BiggerBrewStoreManagementApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'MyCoffeeShop Store Management',
+    title: 'MyCoffeeShop',
     theme: storeManagementTheme(),
     home: const StoreManagementAuthGate(),
   );

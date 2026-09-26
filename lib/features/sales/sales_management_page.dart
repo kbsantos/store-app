@@ -6,6 +6,7 @@ import '../reporting_api/hourly_sales_page.dart';
 import '../reporting_api/payment_summary_page.dart';
 import '../reporting_api/product_sales_page.dart';
 import '../reporting_api/category_sales_page.dart';
+import '../store_eod_page.dart';
 
 class SalesManagementPage extends StatelessWidget {
   const SalesManagementPage({super.key});
@@ -116,6 +117,16 @@ class SalesManagementPage extends StatelessWidget {
                       'PAYMENT SUMMARY',
                       'Review payment count and total paid by payment method.',
                       const PaymentSummaryPage(),
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: _tile(
+                      context,
+                      Icons.event_available_outlined,
+                      'END OF DAY',
+                      'Review sales, payments and inventory consumption, then close the business date.',
+                      const StoreEodPage(),
                     ),
                   ),
                 ],

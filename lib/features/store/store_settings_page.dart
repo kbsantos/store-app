@@ -5,6 +5,7 @@ import '../../core/auth/store_management_permissions.dart';
 import 'store_database_reset_page.dart';
 import 'store_profile_page.dart';
 import 'store_operating_hours_page.dart';
+import '../users/users_management_page.dart';
 
 class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});
@@ -68,6 +69,27 @@ class StoreSettingsPage extends StatelessWidget {
               ),
             ),
           ),
+          if (permissions.canManageUsers) ...[
+            const SizedBox(height: 12),
+            Card(
+              child: ListTile(
+                leading: const CircleAvatar(child: Icon(Icons.people_outline)),
+                title: const Text(
+                  'Users',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                subtitle: const Text(
+                  'Manage employees, roles and store permissions.',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const UsersManagementPage(),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Card(
             child: ListTile(
@@ -79,7 +101,7 @@ class StoreSettingsPage extends StatelessWidget {
               subtitle: Text(
                 canReset
                     ? 'Manage store operational data and database reset.'
-                    : 'Database reset is restricted to owner and admin accounts.',
+                    : 'Database reset is restricted to owner accounts.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: canReset

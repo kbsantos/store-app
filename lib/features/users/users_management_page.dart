@@ -19,6 +19,14 @@ class _UsersManagementPageState extends State<UsersManagementPage>
   Object? _error;
 
   bool get _canManage => _permissions.canManageUsers;
+  String get _currentRole => _auth.role;
+
+  bool _canEditEmployee(Map<String, dynamic> employee) {
+    if (!_canManage) return false;
+    final targetRole = employee['role']?.toString().trim().toLowerCase() ?? 'staff';
+    if (_currentRole == 'owner') return true;
+    return !{'owner', 'admin'}.contains(targetRole);
+  }
 
   @override
   void initState() {
@@ -52,22 +60,61 @@ class _UsersManagementPageState extends State<UsersManagementPage>
     if (!_canManage) return;
     final result = await showDialog<bool>(
       context: context,
-      builder: (_) => const _EmployeeDialog(),
+      builder: (_) => _EmployeeDialog(assignableRoles: _permissions.assignableRoles()),
     );
     if (result == true) await _load();
   }
 
   Future<void> _editEmployee(Map<String, dynamic> employee) async {
-    if (!_canManage) return;
+    if (!_canEditEmployee(employee)) return;
     final result = await showDialog<bool>(
       context: context,
-      builder: (_) => _EmployeeDialog(employee: employee),
+      builder: (_) => _EmployeeDialog(employee: employee, assignableRoles: _permissions.assignableRoles()),
     );
     if (result == true) await _load();
   }
 
+  Future<void> _linkEmployee(Map<String, dynamic> employee) async {
+    if (!_canEditEmployee(employee)) return;
+    if (employee['status']?.toString() != 'PENDING AUTH') return;
+    final inviteId = employee['employee_id']?.toString();
+    final email = employee['email']?.toString().trim() ?? '';
+    final name = employee['full_name']?.toString().trim();
+    if (inviteId == null || inviteId.isEmpty || email.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('LINK AUTH ACCOUNT'),
+        content: Text(
+          'Link the existing Supabase Auth account for\n\n'
+          '${name == null || name.isEmpty ? email : name}\n'
+          '$email\n\n'
+          'The employee must already have a Supabase Auth account using this email.\n\n'
+          'After linking, the employee will become ACTIVE in Store Management. No password is created or stored by this app.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('CANCEL')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('LINK ACCOUNT')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await _auth.client.rpc('link_store_employee_invite', params: {
+        'p_invite_id': inviteId,
+        'p_email': email,
+      });
+      if (mounted) _message('$email is now linked and active.');
+      await _load();
+    } catch (e) {
+      if (mounted) _message('Unable to link Auth account: $e');
+    }
+  }
+
   Future<void> _toggle(Map<String, dynamic> employee) async {
-    if (!_canManage) return;
+    if (!_canEditEmployee(employee)) return;
     final userId = employee['user_id']?.toString();
     if (userId == null || userId.isEmpty) return;
     try {
@@ -81,8 +128,59 @@ class _UsersManagementPageState extends State<UsersManagementPage>
     }
   }
 
+  Future<void> _deleteEmployee(Map<String, dynamic> employee) async {
+    if (_currentRole != 'owner') return;
+    final userId = employee['user_id']?.toString();
+    final employeeId = employee['employee_id']?.toString();
+    final pending = employee['status']?.toString() == 'PENDING AUTH';
+    if ((pending && (employeeId == null || employeeId.isEmpty)) ||
+        (!pending && (userId == null || userId.isEmpty))) return;
+    if (!pending && userId == _auth.user?.id) {
+      _message('You cannot delete your own account.');
+      return;
+    }
+
+    final name = employee['full_name']?.toString().trim();
+    final email = employee['email']?.toString().trim() ?? '';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(pending ? 'DELETE PENDING EMPLOYEE?' : 'DELETE USER?'),
+        content: Text(
+          pending
+              ? 'This will permanently remove the pending employee invitation for ${name == null || name.isEmpty ? email : name}. This action cannot be undone.'
+              : 'This will permanently remove ${name == null || name.isEmpty ? email : name} from Store Management and delete the associated Supabase Auth account. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('CANCEL')),
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('DELETE'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      if (pending) {
+        await _auth.client.rpc('delete_store_employee_invite', params: {
+          'p_invite_id': employeeId,
+        });
+      } else {
+        await _auth.client.rpc('delete_store_employee', params: {
+          'p_user_id': userId,
+        });
+      }
+      if (mounted) _message('User deleted.');
+      await _load();
+    } catch (e) {
+      if (mounted) _message('Unable to delete user: $e');
+    }
+  }
+
   Future<void> _sendPasswordEmail(Map<String, dynamic> employee) async {
-    if (!_canManage) return;
+    if (!_canEditEmployee(employee)) return;
     final email = employee['email']?.toString().trim() ?? '';
     if (email.isEmpty) return;
     final name = employee['full_name']?.toString().trim();
@@ -138,10 +236,13 @@ class _UsersManagementPageState extends State<UsersManagementPage>
               : TabBarView(controller: _tabs, children: [
                   _EmployeeList(
                     employees: _employees,
-                    canEdit: _canManage,
                     onEdit: _editEmployee,
+                    onLink: _linkEmployee,
                     onToggle: _toggle,
                     onPasswordEmail: _sendPasswordEmail,
+                    onDelete: _deleteEmployee,
+                    canEditEmployee: _canEditEmployee,
+                    canDelete: _permissions.canDeleteUsers,
                   ),
                   const _PermissionsPage(),
                 ]),
@@ -152,16 +253,22 @@ class _UsersManagementPageState extends State<UsersManagementPage>
 class _EmployeeList extends StatelessWidget {
   const _EmployeeList({
     required this.employees,
-    required this.canEdit,
     required this.onEdit,
+    required this.onLink,
     required this.onToggle,
     required this.onPasswordEmail,
+    required this.onDelete,
+    required this.canEditEmployee,
+    required this.canDelete,
   });
   final List<Map<String, dynamic>> employees;
-  final bool canEdit;
   final Future<void> Function(Map<String, dynamic>) onEdit;
+  final Future<void> Function(Map<String, dynamic>) onLink;
   final Future<void> Function(Map<String, dynamic>) onToggle;
   final Future<void> Function(Map<String, dynamic>) onPasswordEmail;
+  final Future<void> Function(Map<String, dynamic>) onDelete;
+  final bool Function(Map<String, dynamic>) canEditEmployee;
+  final bool canDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -182,21 +289,28 @@ class _EmployeeList extends StatelessWidget {
         final role = employee['role']?.toString() ?? 'staff';
         final email = employee['email']?.toString() ?? '-';
         final name = employee['full_name']?.toString().trim();
+        final canEditThis = canEditEmployee(employee);
         return Card(
           child: ListTile(
             leading: CircleAvatar(child: Icon(pending ? Icons.person_add_outlined : (active ? Icons.person_outline : Icons.person_off_outlined))),
             title: Text(name == null || name.isEmpty ? email : name, style: const TextStyle(fontWeight: FontWeight.w800)),
             subtitle: Text('$email\n${role.toUpperCase()} • ${pending ? 'PENDING AUTH' : (active ? 'ACTIVE' : 'INACTIVE')}'),
             isThreeLine: true,
-            trailing: canEdit
+            trailing: canEditThis
                 ? Wrap(spacing: 4, children: [
-                    if (pending)
+                    if (pending) ...[
                       IconButton(
                         tooltip: 'LINK AUTH USER',
-                        onPressed: () => onEdit(employee),
+                        onPressed: () => onLink(employee),
                         icon: const Icon(Icons.link_outlined),
-                      )
-                    else ...[
+                      ),
+                      if (canDelete)
+                        IconButton(
+                          tooltip: 'DELETE PENDING EMPLOYEE',
+                          onPressed: () => onDelete(employee),
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        ),
+                    ] else ...[
                       IconButton(
                         tooltip: 'SEND PASSWORD EMAIL',
                         onPressed: () => onPasswordEmail(employee),
@@ -204,6 +318,12 @@ class _EmployeeList extends StatelessWidget {
                       ),
                       IconButton(onPressed: () => onEdit(employee), icon: const Icon(Icons.edit_outlined)),
                       Switch(value: active, onChanged: (_) => onToggle(employee)),
+                      if (canDelete)
+                        IconButton(
+                          tooltip: 'DELETE USER',
+                          onPressed: () => onDelete(employee),
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        ),
                     ],
                   ])
                 : Chip(label: Text(pending ? 'PENDING AUTH' : (active ? 'ACTIVE' : 'INACTIVE'))),
@@ -215,8 +335,9 @@ class _EmployeeList extends StatelessWidget {
 }
 
 class _EmployeeDialog extends StatefulWidget {
-  const _EmployeeDialog({this.employee});
+  const _EmployeeDialog({this.employee, required this.assignableRoles});
   final Map<String, dynamic>? employee;
+  final List<String> assignableRoles;
   @override
   State<_EmployeeDialog> createState() => _EmployeeDialogState();
 }
@@ -230,7 +351,13 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
   bool _active = true;
   bool _saving = false;
 
-  final _roles = const ['staff', 'editor', 'manager', 'admin', 'owner'];
+  List<String> get _roles {
+    final current = _role;
+    final roles = {...widget.assignableRoles, if (current.isNotEmpty) current}.toList();
+    const order = ['staff', 'editor', 'manager', 'admin', 'owner'];
+    roles.sort((a, b) => order.indexOf(a).compareTo(order.indexOf(b)));
+    return roles;
+  }
 
   @override
   void initState() {
@@ -306,7 +433,9 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
                 initialValue: _role,
                 decoration: const InputDecoration(labelText: 'Role'),
                 items: _roles.map((r) => DropdownMenuItem(value: r, child: Text(r.toUpperCase()))).toList(),
-                onChanged: (v) => setState(() => _role = v ?? 'staff'),
+                onChanged: widget.assignableRoles.contains(_role)
+                    ? (v) => setState(() => _role = v ?? _role)
+                    : null,
               ),
               if (widget.employee != null) ...[
                 const SizedBox(height: 12),
@@ -314,7 +443,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               ],
               const SizedBox(height: 8),
               const Text(
-                'If the email is not yet registered in Supabase Auth, the employee will be saved as PENDING AUTH and can be linked later. After linking, an admin or owner can send a Supabase password setup email. This screen never creates or stores passwords.',
+                'Employees can be created before their Supabase Auth account exists. Admins can assign Staff, Editor or Manager roles; only Owners can assign Admin or Owner. After linking, an authorized manager can send a Supabase password setup email. This screen never creates or stores passwords.',
                 style: TextStyle(color: Colors.black54, fontSize: 12),
               ),
             ]),
@@ -335,15 +464,18 @@ class _PermissionsPage extends StatelessWidget {
     const roles = ['OWNER', 'ADMIN', 'MANAGER', 'EDITOR', 'STAFF'];
     const rows = <List<String>>[
       ['Dashboard / Sales', 'VIEW', 'VIEW', 'VIEW', 'VIEW', 'VIEW'],
-      ['Product Catalog', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
+      ['Product Catalog', 'EDIT', 'EDIT', 'EDIT', 'EDIT', 'VIEW'],
       ['Inventory', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
       ['Recipes', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
       ['End of Day', 'COMPLETE', 'COMPLETE', 'COMPLETE', 'VIEW', 'VIEW'],
       ['Kiosks / Printers', 'EDIT', 'EDIT', 'EDIT', 'VIEW', 'VIEW'],
       ['Store Profile', 'EDIT', 'EDIT', 'VIEW', 'VIEW', 'VIEW'],
       ['Operating Hours', 'EDIT', 'EDIT', 'VIEW', 'VIEW', 'VIEW'],
-      ['Database Reset', 'RESET', 'RESET', '—', '—', '—'],
-      ['Employees / Roles', 'MANAGE', 'MANAGE', 'VIEW', 'VIEW', 'VIEW'],
+      ['Database Reset', 'RESET', '—', '—', '—', '—'],
+      ['Employees / Roles', 'MANAGE', 'MANAGE', '—', '—', '—'],
+      ['Disable Users', 'YES', 'YES', '—', '—', '—'],
+      ['Delete Users', 'YES', '—', '—', '—', '—'],
+      ['Assign Admin / Owner', 'YES', '—', '—', '—', '—'],
     ];
 
     return ListView(
