@@ -188,7 +188,6 @@ class _StoreDashboardPageState extends State<StoreDashboardPage> {
   int get _orders => _daily.fold(0, (s, r) => s + r.transactionCount);
   num get _sales => _daily.fold<num>(0, (s, r) => s + r.totalSales);
   int get _items => _products.fold(0, (s, r) => s + r.quantitySold);
-  num get _averageOrder => _orders == 0 ? 0 : _sales / _orders;
   num get _paid => _payments.fold<num>(0, (s, r) => s + _num(r['totalAmount']));
 
   List<_ProductTotal> get _topProducts {

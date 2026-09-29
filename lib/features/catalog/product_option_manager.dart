@@ -1020,10 +1020,28 @@ class _AutomaticChargeDialogState extends State<_AutomaticChargeDialog> {
               dense: true, title: Text(c.name), value: _categoryIds.contains(c.categoryId),
               onChanged: (v) => setState(() => v == true ? _categoryIds.add(c.categoryId) : _categoryIds.remove(c.categoryId)),
             )),
-            if (_scope == 'product') ...widget.products.map((p) => CheckboxListTile(
-              dense: true, title: Text(p.name), subtitle: Text(p.productId), value: _productIds.contains(p.productId),
-              onChanged: (v) => setState(() => v == true ? _productIds.add(p.productId) : _productIds.remove(p.productId)),
-            )),
+            if (_scope == 'product') ...widget.products.map((p) {
+              String? categoryName;
+              for (final category in widget.categories) {
+                if (category.categoryId == p.categoryId) {
+                  categoryName = category.name;
+                  break;
+                }
+              }
+              final categoryLabel = (categoryName == null || categoryName.trim().isEmpty)
+                  ? p.categoryId
+                  : categoryName;
+              final typeLabel = p.productType.trim().isEmpty ? 'Unknown' : p.productType;
+              return CheckboxListTile(
+                dense: true,
+                title: Text(p.name),
+                subtitle: Text(
+                  'Category: $categoryLabel • Type: $typeLabel • ID: ${p.productId}',
+                ),
+                value: _productIds.contains(p.productId),
+                onChanged: (v) => setState(() => v == true ? _productIds.add(p.productId) : _productIds.remove(p.productId)),
+              );
+            }),
             if (_scope == 'product_type') ..._types.map((type) => CheckboxListTile(
               dense: true, title: Text(type), value: _productTypes.contains(type),
               onChanged: (v) => setState(() => v == true ? _productTypes.add(type) : _productTypes.remove(type)),

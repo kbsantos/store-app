@@ -43,3 +43,14 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+
+// Publish the release APK with a store-friendly filename.
+tasks.register<Copy>("copyNamedReleaseApk") {
+    dependsOn("assembleRelease")
+    from(layout.buildDirectory.dir("outputs/apk/release")) {
+        include("app-release.apk")
+        rename("app-release.apk", "BiggerBrew_Store_Management.apk")
+    }
+    into(layout.buildDirectory.dir("outputs/flutter-apk"))
+}
