@@ -8,6 +8,7 @@ class ProductCatalog {
   final List<ProductCategory> categories;
   final List<CatalogOptionDefinition> optionDefinitions;
   final List<CatalogProduct> products;
+  final List<CatalogAutomaticCharge> automaticCharges;
 
   const ProductCatalog({
     this.schemaVersion = currentSchemaVersion,
@@ -15,6 +16,7 @@ class ProductCatalog {
     required this.categories,
     this.optionDefinitions = const [],
     required this.products,
+    this.automaticCharges = const [],
   });
 
   factory ProductCatalog.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,9 @@ class ProductCatalog {
       products: (json['products'] as List<dynamic>? ?? const [])
           .map((e) => CatalogProduct.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false),
+      automaticCharges: (json['automaticCharges'] as List<dynamic>? ?? const [])
+          .map((e) => CatalogAutomaticCharge.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(growable: false),
     );
   }
 
@@ -37,6 +42,7 @@ class ProductCatalog {
     'categories': categories.map((e) => e.toJson()).toList(),
     'optionDefinitions': optionDefinitions.map((e) => e.toJson()).toList(),
     'products': products.map((e) => e.toJson()).toList(),
+    'automaticCharges': automaticCharges.map((e) => e.toJson()).toList(),
   };
 
   List<CatalogProduct> productsForCategory(String categoryId) {
@@ -51,6 +57,7 @@ class ProductCatalog {
     List<ProductCategory>? categories,
     List<CatalogOptionDefinition>? optionDefinitions,
     List<CatalogProduct>? products,
+    List<CatalogAutomaticCharge>? automaticCharges,
   }) {
     return ProductCatalog(
       schemaVersion: schemaVersion ?? this.schemaVersion,
@@ -58,6 +65,7 @@ class ProductCatalog {
       categories: categories ?? this.categories,
       optionDefinitions: optionDefinitions ?? this.optionDefinitions,
       products: products ?? this.products,
+      automaticCharges: automaticCharges ?? this.automaticCharges,
     );
   }
 
@@ -111,6 +119,76 @@ class ProductCatalog {
     }
     return null;
   }
+}
+
+
+class CatalogAutomaticCharge {
+  final String chargeId;
+  final String name;
+  final num amount;
+  final bool active;
+  final String scope;
+  final List<String> categoryIds;
+  final List<String> productIds;
+  final List<String> productTypes;
+
+  const CatalogAutomaticCharge({
+    required this.chargeId,
+    required this.name,
+    required this.amount,
+    required this.active,
+    required this.scope,
+    this.categoryIds = const [],
+    this.productIds = const [],
+    this.productTypes = const [],
+  });
+
+  factory CatalogAutomaticCharge.fromJson(Map<String, dynamic> json) {
+    List<String> list(dynamic value) => value is List
+        ? value.map((e) => e.toString()).where((e) => e.trim().isNotEmpty).toList(growable: false)
+        : const [];
+    return CatalogAutomaticCharge(
+      chargeId: json['chargeId']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      amount: (json['amount'] as num?) ?? num.tryParse(json['amount']?.toString() ?? '') ?? 0,
+      active: json['active'] == true,
+      scope: json['scope']?.toString() ?? 'category',
+      categoryIds: list(json['categoryIds']),
+      productIds: list(json['productIds']),
+      productTypes: list(json['productTypes']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'chargeId': chargeId,
+    'name': name,
+    'amount': amount,
+    'active': active,
+    'scope': scope,
+    'categoryIds': categoryIds,
+    'productIds': productIds,
+    'productTypes': productTypes,
+  };
+
+  CatalogAutomaticCharge copyWith({
+    String? chargeId,
+    String? name,
+    num? amount,
+    bool? active,
+    String? scope,
+    List<String>? categoryIds,
+    List<String>? productIds,
+    List<String>? productTypes,
+  }) => CatalogAutomaticCharge(
+    chargeId: chargeId ?? this.chargeId,
+    name: name ?? this.name,
+    amount: amount ?? this.amount,
+    active: active ?? this.active,
+    scope: scope ?? this.scope,
+    categoryIds: categoryIds ?? this.categoryIds,
+    productIds: productIds ?? this.productIds,
+    productTypes: productTypes ?? this.productTypes,
+  );
 }
 
 class ProductCategory {
@@ -378,6 +456,7 @@ class ProductOption {
   final num? price;
   final bool active;
   final bool kitchenPrepared;
+  final bool autoApply;
 
   const ProductOption({
     required this.optionId,
@@ -385,6 +464,7 @@ class ProductOption {
     this.price,
     required this.active,
     this.kitchenPrepared = false,
+    this.autoApply = false,
   });
 
   factory ProductOption.fromJson(Map<String, dynamic> json) {
@@ -394,16 +474,18 @@ class ProductOption {
       price: json['price'] as num?,
       active: json['active'] == true,
       kitchenPrepared: json['kitchenPrepared'] == true,
+      autoApply: json['autoApply'] == true,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'optionId': optionId, 'name': name, if (price != null) 'price': price,
-    'active': active, 'kitchenPrepared': kitchenPrepared,
+    'active': active, 'kitchenPrepared': kitchenPrepared, 'autoApply': autoApply,
   };
 
-  ProductOption copyWith({String? optionId, String? name, num? price, bool? active, bool? kitchenPrepared}) => ProductOption(
+  ProductOption copyWith({String? optionId, String? name, num? price, bool? active, bool? kitchenPrepared, bool? autoApply}) => ProductOption(
     optionId: optionId ?? this.optionId, name: name ?? this.name, price: price ?? this.price,
     active: active ?? this.active, kitchenPrepared: kitchenPrepared ?? this.kitchenPrepared,
+    autoApply: autoApply ?? this.autoApply,
   );
 }

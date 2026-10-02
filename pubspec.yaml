@@ -1,5 +1,5 @@
 name: bigger_brew_store_management
-description: MyCoffeeShop Store Management - catalog administration and store reporting.
+description: Store Management - catalog administration and store reporting.
 publish_to: "none"
 version: 1.0.0+1
 
@@ -14,6 +14,9 @@ dependencies:
   supabase_flutter: ^2.10.0
   flutter_dotenv: ^5.2.1
   file_picker: ^12.0.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +30,8 @@ flutter:
     - .env
     - assets/catalog/product_catalog.v4.commercial.json
     - assets/icon/bigger_brew_icon.png
+    - assets/fonts/DejaVuSans.ttf
+    - assets/fonts/DejaVuSans-Bold.ttf
 
 flutter_launcher_icons:
   android: true

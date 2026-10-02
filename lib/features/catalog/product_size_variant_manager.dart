@@ -72,6 +72,26 @@ class ProductSizeVariantManagerController extends ChangeNotifier {
     await save(product.copyWith(sizes: sizes));
   }
 
+  Future<void> reorderSizes(CatalogProduct product, int oldIndex, int newIndex) async {
+    final sizes = List<ProductSize>.of(product.sizes);
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = sizes.removeAt(oldIndex);
+    sizes.insert(newIndex, item);
+    await save(product.copyWith(sizes: sizes));
+  }
+
+  Future<void> reorderVariants(
+    CatalogProduct product,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    final variants = List<ProductVariant>.of(product.variants);
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = variants.removeAt(oldIndex);
+    variants.insert(newIndex, item);
+    await save(product.copyWith(variants: variants));
+  }
+
   Future<void> deleteSize(CatalogProduct product, String id) async {
     await save(
       product.copyWith(
@@ -350,6 +370,8 @@ class _ProductSizeVariantManagerPageState
           product.sizes
               .map(
                 (size) => _row(
+                  product.sizes.indexOf(size),
+                  ValueKey('size:${size.sizeId}'),
                   size.name,
                   '${size.displayVolume ?? ''}'
                   '${size.price == null ? ' • no price' : ' • ${StoreCurrency.format(size.price!)}'}',
@@ -358,6 +380,13 @@ class _ProductSizeVariantManagerPageState
                 ),
               )
               .toList(growable: false),
+          onReorder: (oldIndex, newIndex) async {
+            try {
+              await _controller.reorderSizes(product, oldIndex, newIndex);
+            } catch (error) {
+              _msg(error);
+            }
+          },
         ),
         const SizedBox(height: 24),
         _section(
@@ -367,6 +396,8 @@ class _ProductSizeVariantManagerPageState
           product.variants
               .map(
                 (variant) => _row(
+                  product.variants.indexOf(variant),
+                  ValueKey('variant:${variant.variantId}'),
                   variant.name,
                   '${variant.active ? 'Active' : 'Inactive'}'
                   '${variant.price == null ? ' • no price' : ' • ${StoreCurrency.format(variant.price!)}'}',
@@ -375,6 +406,13 @@ class _ProductSizeVariantManagerPageState
                 ),
               )
               .toList(growable: false),
+          onReorder: (oldIndex, newIndex) async {
+            try {
+              await _controller.reorderVariants(product, oldIndex, newIndex);
+            } catch (error) {
+              _msg(error);
+            }
+          },
         ),
       ],
     );
@@ -384,8 +422,9 @@ class _ProductSizeVariantManagerPageState
     String title,
     int count,
     VoidCallback add,
-    List<Widget> rows,
-  ) {
+    List<Widget> rows, {
+    required Future<void> Function(int oldIndex, int newIndex) onReorder,
+  }) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -410,7 +449,22 @@ class _ProductSizeVariantManagerPageState
               ],
             ),
             const Divider(),
-            ...rows,
+            if (rows.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text('No items yet. Add one to get started.'),
+              )
+            else
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                buildDefaultDragHandles: false,
+                itemCount: rows.length,
+                onReorderItem: (oldIndex, newIndex) {
+                  onReorder(oldIndex, newIndex);
+                },
+                itemBuilder: (context, index) => rows[index],
+              ),
           ],
         ),
       ),
@@ -418,12 +472,19 @@ class _ProductSizeVariantManagerPageState
   }
 
   Widget _row(
+    int index,
+    Key key,
     String title,
     String subtitle,
     VoidCallback edit,
     Future<void> Function() remove,
   ) {
     return ListTile(
+      key: key,
+      leading: ReorderableDragStartListener(
+        index: index,
+        child: const Icon(Icons.drag_handle),
+      ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
       subtitle: Text(subtitle),
       trailing: Wrap(

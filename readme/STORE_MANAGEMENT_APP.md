@@ -69,3 +69,22 @@ flutter run -d chrome
 ## Current status
 
 This repository is the first separate Store Management application extraction. Flutter/Dart compilation should be run in the developer environment before release; the build environment used to prepare this package did not include the Flutter SDK.
+
+## Store Admin — Store Profile
+
+The Store Settings area now includes Store Profile. Authenticated users can view
+store details; owner and admin accounts can update the store name, brand,
+location, and active status through the `update_store_management_profile` RPC.
+The feature is store-scoped using `app_metadata.store_id` and does not modify
+catalog or operational transaction data.
+
+Apply `supabase/20260918_store_profile.sql` to the MyCoffeeShop Supabase project
+before using the Store Profile page.
+
+## Store Admin — Operating Hours
+
+Store Settings now includes a weekly Operating Hours page. The schedule is stored
+per store in `store_operating_hours` and accessed through secure management RPCs.
+Owner and admin accounts can edit the seven-day schedule; other authenticated
+management users can view it. Apply `supabase/20260918_store_operating_hours.sql`
+before using the feature.

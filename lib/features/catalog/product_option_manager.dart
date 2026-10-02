@@ -24,6 +24,9 @@ class ProductOptionManagerController extends ChangeNotifier {
   List<CatalogProduct> get products => _catalog?.products ?? const [];
   List<CatalogOptionDefinition> get definitions =>
       _catalog?.optionDefinitions ?? const [];
+  List<CatalogAutomaticCharge> get automaticCharges =>
+      _catalog?.automaticCharges ?? const [];
+  List<ProductCategory> get categories => _catalog?.categories ?? const [];
 
   Future<void> load() async {
     loading = true;
@@ -51,6 +54,60 @@ class ProductOptionManagerController extends ChangeNotifier {
       auditAction: 'Update product options in store master',
     );
     notifyListeners();
+  }
+
+  Future<void> addAutomaticCharge(CatalogAutomaticCharge charge) async {
+    _validateAutomaticCharge(charge);
+    await saveCatalogCharges([...automaticCharges, charge]);
+  }
+
+  Future<void> updateAutomaticCharge(CatalogAutomaticCharge charge) async {
+    _validateAutomaticCharge(charge);
+    final next = automaticCharges
+        .map((item) => item.chargeId == charge.chargeId ? charge : item)
+        .toList(growable: false);
+    await saveCatalogCharges(next);
+  }
+
+  Future<void> deleteAutomaticCharge(String chargeId) async {
+    await saveCatalogCharges(automaticCharges
+        .where((item) => item.chargeId != chargeId)
+        .toList(growable: false));
+  }
+
+  Future<void> saveCatalogCharges(List<CatalogAutomaticCharge> value) async {
+    _catalog = await _masterService.publishCatalog(
+      _catalog!.copyWith(automaticCharges: value),
+      auditAction: 'Update automatic charges in store master',
+    );
+    notifyListeners();
+  }
+
+  void _validateAutomaticCharge(CatalogAutomaticCharge charge) {
+    if (!RegExp(r'^[a-z0-9]+(?:_[a-z0-9]+)*$').hasMatch(charge.chargeId)) {
+      throw StateError('Charge ID must use lowercase letters, numbers, and underscores.');
+    }
+    if (charge.name.trim().isEmpty) throw StateError('Charge name is required.');
+    if (charge.amount < 0) throw StateError('Charge amount cannot be negative.');
+    if (!{'category', 'product', 'product_type'}.contains(charge.scope)) {
+      throw StateError('Invalid charge scope.');
+    }
+    final hasTarget = switch (charge.scope) {
+      'category' => charge.categoryIds.isNotEmpty,
+      'product' => charge.productIds.isNotEmpty,
+      'product_type' => charge.productTypes.isNotEmpty,
+      _ => false,
+    };
+    if (!hasTarget) throw StateError('Select at least one target for this charge.');
+    if (charge.scope == 'category' && charge.categoryIds.any((id) => !categories.any((c) => c.categoryId == id))) {
+      throw StateError('Charge references an unknown category.');
+    }
+    if (charge.scope == 'product' && charge.productIds.any((id) => !products.any((p) => p.productId == id))) {
+      throw StateError('Charge references an unknown product.');
+    }
+    if (automaticCharges.any((item) => item.chargeId == charge.chargeId)) {
+      // Allow replacement by the update path; callers handle duplicate IDs there.
+    }
   }
 
   Future<void> addDefinition(CatalogOptionDefinition option) async {
@@ -124,6 +181,7 @@ class ProductOptionManagerController extends ChangeNotifier {
       price: definition.price,
       active: definition.active,
       kitchenPrepared: definition.kitchenPrepared,
+      autoApply: false,
     );
     if (product.options.any((item) => item.optionId == option.optionId)) {
       return;
@@ -201,9 +259,9 @@ class ProductOptionManagerPage extends StatefulWidget {
 class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
     with SingleTickerProviderStateMixin {
   final _controller = ProductOptionManagerController();
-  late final TabController _tabs = TabController(length: 2, vsync: this);
+  late final TabController _tabs = TabController(length: 3, vsync: this);
   String _search = '';
-  CatalogProduct? _selected;
+  String? _selectedProductId;
 
   @override
   void initState() {
@@ -214,17 +272,21 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
 
   void _refresh() {
     if (!mounted) return;
-    setState(() {
-      final selectedId = _selected?.productId;
-      if (selectedId == null) return;
-      for (final product in _controller.products) {
-        if (product.productId == selectedId) {
-          _selected = product;
-          return;
-        }
-      }
-      _selected = null;
-    });
+    final selectedId = _selectedProductId;
+    if (selectedId != null &&
+        !_controller.products.any((product) => product.productId == selectedId)) {
+      _selectedProductId = null;
+    }
+    setState(() {});
+  }
+
+  CatalogProduct? get _selectedProduct {
+    final selectedId = _selectedProductId;
+    if (selectedId == null) return null;
+    for (final product in _controller.products) {
+      if (product.productId == selectedId) return product;
+    }
+    return null;
   }
 
   @override
@@ -273,13 +335,86 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
           tabs: const [
             Tab(text: 'SHARED OPTIONS'),
             Tab(text: 'PRODUCT ASSIGNMENT'),
+            Tab(text: 'CHARGES & FEES'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabs,
-        children: [_sharedTab(), _assignmentTab()],
+        children: [_sharedTab(), _assignmentTab(), _chargesTab()],
       ),
+    );
+  }
+
+  Widget _chargesTab() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Text(
+                '${_controller.automaticCharges.length} charges',
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const Spacer(),
+              FilledButton.icon(
+                onPressed: () => _editAutomaticCharge(null),
+                icon: const Icon(Icons.add),
+                label: const Text('ADD CHARGE'),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: _controller.automaticCharges.isEmpty
+              ? const Center(child: Text('No automatic charges configured.'))
+              : ListView.builder(
+                  itemCount: _controller.automaticCharges.length,
+                  itemBuilder: (context, index) {
+                    final charge = _controller.automaticCharges[index];
+                    final targets = switch (charge.scope) {
+                      'category' => charge.categoryIds.join(', '),
+                      'product' => charge.productIds.join(', '),
+                      'product_type' => charge.productTypes.join(', '),
+                      _ => '',
+                    };
+                    return ListTile(
+                      title: Text(charge.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: Text(
+                        '${StoreCurrency.format(charge.amount)} • ${charge.scope} • $targets • ${charge.active ? 'Active' : 'Inactive'}',
+                      ),
+                      trailing: Wrap(
+                        children: [
+                          IconButton(
+                            onPressed: () => _editAutomaticCharge(charge),
+                            icon: const Icon(Icons.edit),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              final ok = await CatalogChangeGuard.confirm(
+                                context,
+                                title: 'Delete automatic charge?',
+                                message: 'Remove ${charge.name} from the catalog?',
+                                destructive: true,
+                              );
+                              if (!ok) return;
+                              try {
+                                await _controller.deleteAutomaticCharge(charge.chargeId);
+                              } catch (error) {
+                                _msg(error);
+                              }
+                            },
+                            icon: const Icon(Icons.delete_outline),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -382,7 +517,7 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
                   itemBuilder: (context, index) {
                     final product = _filtered[index];
                     return ListTile(
-                      selected: _selected?.productId == product.productId,
+                      selected: _selectedProductId == product.productId,
                       title: Text(
                         product.name,
                         style: const TextStyle(fontWeight: FontWeight.w700),
@@ -391,7 +526,7 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
                         '${product.productId}\n${product.options.length} product-specific options',
                       ),
                       isThreeLine: true,
-                      onTap: () => setState(() => _selected = product),
+                      onTap: () => setState(() => _selectedProductId = product.productId),
                     );
                   },
                 ),
@@ -401,9 +536,9 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
         ),
         const VerticalDivider(width: 1),
         Expanded(
-          child: _selected == null
+          child: _selectedProduct == null
               ? const Center(child: Text('Select a product'))
-              : _productDetail(_selected!),
+              : _productDetail(_selectedProduct!),
         ),
       ],
     );
@@ -452,7 +587,8 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
               subtitle: Text(
                 '${option.optionId} • '
                 '${option.price == null ? 'No price' : StoreCurrency.format(option.price!)} • '
-                '${option.kitchenPrepared ? 'Kitchen' : 'Not kitchen'}',
+                '${option.kitchenPrepared ? 'Kitchen' : 'Not kitchen'} • '
+                '${option.autoApply ? 'Auto apply' : 'Manual'}',
               ),
               leading: Icon(
                 option.active ? Icons.check_circle : Icons.pause_circle,
@@ -520,6 +656,30 @@ class _ProductOptionManagerPageState extends State<ProductOptionManagerPage>
         ),
       ],
     );
+  }
+
+  Future<void> _editAutomaticCharge(CatalogAutomaticCharge? current) async {
+    final result = await showDialog<CatalogAutomaticCharge>(
+      context: context,
+      builder: (_) => _AutomaticChargeDialog(
+        value: current,
+        categories: _controller.categories,
+        products: _controller.products,
+      ),
+    );
+    if (result == null) return;
+    try {
+      if (current == null) {
+        if (_controller.automaticCharges.any((item) => item.chargeId == result.chargeId)) {
+          throw StateError('Charge ID already exists.');
+        }
+        await _controller.addAutomaticCharge(result);
+      } else {
+        await _controller.updateAutomaticCharge(result);
+      }
+    } catch (error) {
+      _msg(error);
+    }
   }
 
   Future<void> _editDefinition(CatalogOptionDefinition? current) async {
@@ -701,6 +861,7 @@ class _ProductOptionDialogState extends State<_ProductOptionDialog> {
   late final TextEditingController _price;
   late bool _active;
   late bool _kitchenPrepared;
+  late bool _autoApply;
 
   @override
   void initState() {
@@ -711,6 +872,7 @@ class _ProductOptionDialogState extends State<_ProductOptionDialog> {
     _price = TextEditingController(text: value?.price?.toString() ?? '');
     _active = value?.active ?? true;
     _kitchenPrepared = value?.kitchenPrepared ?? false;
+    _autoApply = value?.autoApply ?? false;
   }
 
   @override
@@ -757,6 +919,14 @@ class _ProductOptionDialogState extends State<_ProductOptionDialog> {
               onChanged: (value) =>
                   setState(() => _kitchenPrepared = value),
             ),
+            SwitchListTile(
+              title: const Text('Auto apply'),
+              subtitle: const Text(
+                'Select this add-on automatically when the product is added. The customer can still remove it.',
+              ),
+              value: _autoApply,
+              onChanged: (value) => setState(() => _autoApply = value),
+            ),
           ],
         ),
       ),
@@ -777,11 +947,117 @@ class _ProductOptionDialogState extends State<_ProductOptionDialog> {
                     : num.tryParse(_price.text.trim()),
                 active: _active,
                 kitchenPrepared: _kitchenPrepared,
+                autoApply: _autoApply,
               ),
             );
           },
           child: const Text('SAVE'),
         ),
+      ],
+    );
+  }
+}
+
+
+class _AutomaticChargeDialog extends StatefulWidget {
+  const _AutomaticChargeDialog({this.value, required this.categories, required this.products});
+  final CatalogAutomaticCharge? value;
+  final List<ProductCategory> categories;
+  final List<CatalogProduct> products;
+  @override State<_AutomaticChargeDialog> createState() => _AutomaticChargeDialogState();
+}
+
+class _AutomaticChargeDialogState extends State<_AutomaticChargeDialog> {
+  late final TextEditingController _id;
+  late final TextEditingController _name;
+  late final TextEditingController _amount;
+  late bool _active;
+  late String _scope;
+  late Set<String> _categoryIds;
+  late Set<String> _productIds;
+  late Set<String> _productTypes;
+  static const _types = ['drink', 'food', 'accessory', 'addOn'];
+
+  @override void initState() {
+    super.initState();
+    final value = widget.value;
+    _id = TextEditingController(text: value?.chargeId ?? '');
+    _name = TextEditingController(text: value?.name ?? '');
+    _amount = TextEditingController(text: value?.amount.toString() ?? '');
+    _active = value?.active ?? true;
+    _scope = value?.scope ?? 'category';
+    _categoryIds = {...(value?.categoryIds ?? const [])};
+    _productIds = {...(value?.productIds ?? const [])};
+    _productTypes = {...(value?.productTypes ?? const [])};
+  }
+  @override void dispose() { _id.dispose(); _name.dispose(); _amount.dispose(); super.dispose(); }
+
+  @override Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.value == null ? 'ADD AUTOMATIC CHARGE' : 'EDIT AUTOMATIC CHARGE'),
+      content: SizedBox(
+        width: 560,
+        height: 620,
+        child: SingleChildScrollView(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            TextField(controller: _id, readOnly: widget.value != null, decoration: const InputDecoration(labelText: 'Charge ID')),
+            TextField(controller: _name, decoration: const InputDecoration(labelText: 'Name')),
+            TextField(controller: _amount, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Amount')),
+            SwitchListTile(title: const Text('Active'), value: _active, onChanged: (v) => setState(() => _active = v)),
+            DropdownButtonFormField<String>(
+              initialValue: _scope,
+              decoration: const InputDecoration(labelText: 'Scope'),
+              items: const [
+                DropdownMenuItem(value: 'category', child: Text('Category')),
+                DropdownMenuItem(value: 'product', child: Text('Product')),
+                DropdownMenuItem(value: 'product_type', child: Text('Product Type')),
+              ],
+              onChanged: (v) => setState(() => _scope = v ?? 'category'),
+            ),
+            const SizedBox(height: 12),
+            Text('Targets', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+            if (_scope == 'category') ...widget.categories.map((c) => CheckboxListTile(
+              dense: true, title: Text(c.name), value: _categoryIds.contains(c.categoryId),
+              onChanged: (v) => setState(() => v == true ? _categoryIds.add(c.categoryId) : _categoryIds.remove(c.categoryId)),
+            )),
+            if (_scope == 'product') ...widget.products.map((p) {
+              String? categoryName;
+              for (final category in widget.categories) {
+                if (category.categoryId == p.categoryId) {
+                  categoryName = category.name;
+                  break;
+                }
+              }
+              final categoryLabel = (categoryName == null || categoryName.trim().isEmpty)
+                  ? p.categoryId
+                  : categoryName;
+              final typeLabel = p.productType.trim().isEmpty ? 'Unknown' : p.productType;
+              return CheckboxListTile(
+                dense: true,
+                title: Text(p.name),
+                subtitle: Text(
+                  'Category: $categoryLabel • Type: $typeLabel • ID: ${p.productId}',
+                ),
+                value: _productIds.contains(p.productId),
+                onChanged: (v) => setState(() => v == true ? _productIds.add(p.productId) : _productIds.remove(p.productId)),
+              );
+            }),
+            if (_scope == 'product_type') ..._types.map((type) => CheckboxListTile(
+              dense: true, title: Text(type), value: _productTypes.contains(type),
+              onChanged: (v) => setState(() => v == true ? _productTypes.add(type) : _productTypes.remove(type)),
+            )),
+          ]),
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+        FilledButton(onPressed: () {
+          final amount = num.tryParse(_amount.text.trim());
+          Navigator.pop(context, CatalogAutomaticCharge(
+            chargeId: _id.text.trim(), name: _name.text.trim(), amount: amount ?? 0, active: _active, scope: _scope,
+            categoryIds: _categoryIds.toList(growable: false), productIds: _productIds.toList(growable: false), productTypes: _productTypes.toList(growable: false),
+          ));
+        }, child: const Text('SAVE')),
       ],
     );
   }
