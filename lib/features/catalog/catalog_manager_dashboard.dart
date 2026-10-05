@@ -11,6 +11,7 @@ import 'product_category_assignment.dart';
 import 'catalog_validation_manager.dart';
 import 'store_catalog_master_service.dart';
 import 'catalog_sync_status_page.dart';
+import '../recipes/product_recipes_page.dart';
 
 class CatalogManagerDashboardPage extends StatefulWidget {
   const CatalogManagerDashboardPage({super.key});
@@ -76,7 +77,7 @@ class _CatalogManagerDashboardPageState
         backgroundColor: const Color(0xFF171717),
         foregroundColor: Colors.white,
         title: const Text(
-          'PRODUCT CATALOG',
+          'PRODUCTS',
           style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
         ),
         actions: [
@@ -92,17 +93,17 @@ class _CatalogManagerDashboardPageState
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
           children: [
-            _header(),
-            const SizedBox(height: 18),
+            _pageHeading(),
+            const SizedBox(height: 16),
             if (!canEdit)
               _infoCard(
                 'READ-ONLY ACCESS',
                 'Your account can view the store catalog but does not have manager access to change it.',
               ),
             if (_error != null) _errorCard(_error!),
-            const SizedBox(height: 18),
+            const SizedBox(height: 8),
             _sectionTitle('CATALOG MANAGEMENT'),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _grid([
               _tile(
                 Icons.category_outlined,
@@ -118,6 +119,14 @@ class _CatalogManagerDashboardPageState
                 'Manage products and availability',
                 '${_catalog?.products.length ?? 0}',
                 () => _open(const ProductManagerPage()),
+                enabled: canEdit,
+              ),
+              _tile(
+                Icons.menu_book_outlined,
+                'Product Recipes',
+                'Manage recipes and ingredient usage',
+                'RECIPES',
+                () => _open(const ProductRecipesPage()),
                 enabled: canEdit,
               ),
               _tile(
@@ -163,11 +172,11 @@ class _CatalogManagerDashboardPageState
                 enabled: true,
               ),
             ]),
-            const SizedBox(height: 24),
-            _sectionTitle('QUICK STATUS'),
-            const SizedBox(height: 10),
-            _statusCard(),
             const SizedBox(height: 18),
+            _sectionTitle('QUICK STATUS'),
+            const SizedBox(height: 8),
+            _statusCard(),
+            const SizedBox(height: 14),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(18),
@@ -191,49 +200,49 @@ class _CatalogManagerDashboardPageState
     );
   }
 
-  Widget _header() => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(22),
-      child: Row(
+  Widget _pageHeading() => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact = constraints.maxWidth < 600;
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const CircleAvatar(
-            radius: 30,
+            radius: 24,
             backgroundColor: Color(0xFF171717),
             foregroundColor: Colors.white,
-            child: Icon(Icons.inventory_2_outlined, size: 30),
+            child: Icon(Icons.inventory_2_outlined, size: 25),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'MyCoffeeShop',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2,
+                Text(
+                  'PRODUCTS',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .4,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Store Master Catalog',
-                  style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 3),
                 Text(
                   _catalog == null
-                      ? 'Catalog unavailable'
+                      ? 'Manage the store catalog and recipes.'
                       : 'Master version ${_catalog!.catalogVersion}',
                   style: const TextStyle(color: Colors.black54),
+                  maxLines: compact ? 2 : 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          if (_report != null) _badge(_report!.errors == 0),
+          if (_report != null && !compact) ...[
+            const SizedBox(width: 12),
+            _badge(_report!.errors == 0),
+          ],
         ],
-      ),
-    ),
+      );
+    },
   );
 
   Widget _badge(bool healthy) => Container(
@@ -288,21 +297,24 @@ class _CatalogManagerDashboardPageState
     VoidCallback onTap, {
     required bool enabled,
   }) => Card(
+    margin: EdgeInsets.zero,
+    clipBehavior: Clip.antiAlias,
     child: InkWell(
       onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [
             CircleAvatar(
+              radius: 22,
               backgroundColor: enabled
                   ? const Color(0xFF171717)
                   : Colors.black26,
               foregroundColor: Colors.white,
-              child: Icon(icon),
+              child: Icon(icon, size: 21),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,16 +322,16 @@ class _CatalogManagerDashboardPageState
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(subtitle, style: const TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 5),
                   Text(
                     value,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
                   ),
                 ],
               ),

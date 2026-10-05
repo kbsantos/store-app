@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
 
 class InventoryAdjustmentsPage extends StatefulWidget {
-  const InventoryAdjustmentsPage({super.key});
+  const InventoryAdjustmentsPage({super.key, this.initialInventoryItemId});
+
+  final String? initialInventoryItemId;
 
   @override
   State<InventoryAdjustmentsPage> createState() => _InventoryAdjustmentsPageState();
@@ -56,6 +58,17 @@ class _InventoryAdjustmentsPageState extends State<InventoryAdjustmentsPage> {
             (item) => item?['id'] == id,
             orElse: () => null,
           );
+          _currentQuantity = _selected == null
+              ? null
+              : _number(_selected!['current_quantity']);
+        }
+        if (_selected == null && widget.initialInventoryItemId != null) {
+          for (final item in items) {
+            if (item['id']?.toString() == widget.initialInventoryItemId) {
+              _selected = item;
+              break;
+            }
+          }
           _currentQuantity = _selected == null
               ? null
               : _number(_selected!['current_quantity']);

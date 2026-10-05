@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/store_management_config.dart';
 import 'core/auth/auth_gate.dart';
-import 'core/auth/inactivity_logout_guard.dart';
 import 'core/theme/store_management_theme.dart';
 
 Future<void> main() async {
@@ -30,9 +29,6 @@ class BiggerBrewStoreManagementApp extends StatelessWidget {
     title: 'Store Management',
     theme: storeManagementTheme(),
     home: const StoreManagementAuthGate(),
-    builder: (context, child) => StoreManagementInactivityLogoutGuard(
-      child: child ?? const SizedBox.shrink(),
-    ),
   );
 }
 

@@ -1,12 +1,26 @@
 import 'package:bigger_brew_store_management/features/catalog/product_option_manager.dart';
 import 'package:flutter/material.dart';
+import '../recipes/product_recipes_page.dart';
 import '../../core/currency/store_currency.dart';
+import '../../core/auth/store_management_auth.dart';
 
 import 'catalog_change_guard.dart';
 import 'store_catalog_master_service.dart';
 
 import '../../product_catalog/product_catalog_models.dart';
 import '../../product_catalog/product_catalog_repository.dart';
+
+Future<List<Map<String, dynamic>>> _loadLinkableInventoryItems() async {
+  final result = await const StoreManagementAuth().client.rpc('get_store_inventory_items');
+  final rows = (result as List?) ?? const [];
+  return rows.map((row) => Map<String, dynamic>.from(row as Map))
+      .where((row) => row['is_active'] != false).toList(growable: false);
+}
+
+String _inventoryItemLabel(Map<String, dynamic> item) {
+  final id = item['id']?.toString() ?? '';
+  return '${item['name'] ?? 'Unnamed item'} • ${item['unit'] ?? 'pcs'} • ${id.length > 8 ? id.substring(0, 8) : id}';
+}
 
 class ProductManagerController extends ChangeNotifier {
   ProductManagerController({
@@ -284,6 +298,23 @@ class _ProductManagerPageState extends State<ProductManagerPage> {
                     runSpacing: 12,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
+                      FilledButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ProductRecipesPage(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.menu_book_outlined),
+                        label: const Text('PRODUCT RECIPES'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: gold,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
                       SizedBox(
                         width: 360,
                         child: TextField(
@@ -454,6 +485,15 @@ class _AddProductDialogState extends State<_AddProductDialog> {
   late final TextEditingController _price;
   late String _categoryId;
   String _productType = 'drink';
+  bool _trackInventory = false;
+  String? _inventoryItemId;
+  List<Map<String, dynamic>> _inventoryItems = const [];
+  bool _inventoryItemsLoading = true;
+  String? _inventoryItemsError;
+  String _inventoryUnit = 'pcs';
+  final TextEditingController _inventoryReorderController = TextEditingController(text: '0');
+  bool _deductOnSale = true;
+  bool _allowOutOfStockSales = false;
   String? _drinkTemperature = 'iced';
   bool _active = true;
   bool _available = true;
@@ -462,6 +502,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
   @override
   void initState() {
     super.initState();
+    _loadInventoryItems();
     _id = TextEditingController();
     _name = TextEditingController();
     _description = TextEditingController();
@@ -469,6 +510,43 @@ class _AddProductDialogState extends State<_AddProductDialog> {
     _sku = TextEditingController();
     _price = TextEditingController();
     _categoryId = widget.categories.first.categoryId;
+  }
+
+  Future<void> _loadInventoryItems() async {
+    try {
+      final items = await _loadLinkableInventoryItems();
+      if (!mounted) return;
+      setState(() { _inventoryItems = items; _inventoryItemsLoading = false; _inventoryItemsError = null; });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _inventoryItemsLoading = false; _inventoryItemsError = e.toString(); });
+    }
+  }
+
+  Widget _linkedInventoryField() {
+    final items = [..._inventoryItems];
+    if (_inventoryItemId != null && !items.any((i) => i['id']?.toString() == _inventoryItemId)) {
+      items.add({'id': _inventoryItemId, 'name': 'Previously linked item', 'unit': _inventoryUnit});
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      DropdownButtonFormField<String?>(
+        value: _inventoryItemId,
+        decoration: const InputDecoration(labelText: 'Linked inventory item (optional)', helperText: 'Select the exact record; duplicate names are distinguished by UUID.'),
+        items: [const DropdownMenuItem<String?>(value: null, child: Text('Not linked')),
+          ...items.map((i) => DropdownMenuItem<String?>(value: i['id']?.toString(), child: Text(_inventoryItemLabel(i), overflow: TextOverflow.ellipsis)))],
+        onChanged: _inventoryItemsLoading ? null : (value) => setState(() {
+          _inventoryItemId = value;
+          final matches = _inventoryItems.where((i) => i['id']?.toString() == value).toList();
+          final selected = matches.isEmpty ? null : matches.first;
+          if (selected != null) {
+            _inventoryUnit = selected['unit']?.toString() ?? _inventoryUnit;
+            _inventoryReorderController.text = (selected['reorder_level'] ?? 0).toString();
+          }
+        }),
+      ),
+      if (_inventoryItemsLoading) const LinearProgressIndicator(),
+      if (_inventoryItemsError != null) Text('Could not load inventory items: $_inventoryItemsError', style: const TextStyle(color: Colors.red)),
+    ]);
   }
 
   @override
@@ -479,6 +557,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
     _image.dispose();
     _sku.dispose();
     _price.dispose();
+    _inventoryReorderController.dispose();
     super.dispose();
   }
 
@@ -574,6 +653,48 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                 ),
               ],
               const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Track direct product inventory'),
+                subtitle: const Text('For accessories and resale items that do not use a recipe.'),
+                value: _trackInventory,
+                onChanged: (value) => setState(() => _trackInventory = value),
+              ),
+              if (_trackInventory) ...[
+                DropdownButtonFormField<String>(
+                  initialValue: _inventoryUnit,
+                  decoration: const InputDecoration(labelText: 'Stock unit'),
+                  items: const [
+                    DropdownMenuItem(value: 'pcs', child: Text('Pieces (pcs)')),
+                    DropdownMenuItem(value: 'g', child: Text('Grams (g)')),
+                    DropdownMenuItem(value: 'ml', child: Text('Milliliters (ml)')),
+                    DropdownMenuItem(value: 'pack', child: Text('Pack')),
+                    DropdownMenuItem(value: 'box', child: Text('Box')),
+                    DropdownMenuItem(value: 'set', child: Text('Set')),
+                  ],
+                  onChanged: (value) { if (value != null) setState(() => _inventoryUnit = value); },
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _inventoryReorderController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Reorder level', helperText: 'Alert when on-hand stock reaches this quantity.'),
+                ),
+                const SizedBox(height: 8),
+                _linkedInventoryField(),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Deduct stock on completed sale'),
+                  value: _deductOnSale,
+                  onChanged: (value) => setState(() => _deductOnSale = value),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Allow sale when out of stock'),
+                  value: _allowOutOfStockSales,
+                  onChanged: (value) => setState(() => _allowOutOfStockSales = value),
+                ),
+              ],
               TextField(
                 controller: _description,
                 maxLines: 2,
@@ -653,6 +774,12 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                 active: _active,
                 available: _available,
                 kitchenPrepared: _kitchenPrepared,
+                trackInventory: _trackInventory,
+                inventoryItemId: _inventoryItemId,
+                inventoryUnit: _inventoryUnit,
+                inventoryReorderLevel: num.tryParse(_inventoryReorderController.text.trim()) ?? 0,
+                deductOnSale: _deductOnSale,
+                allowOutOfStockSales: _allowOutOfStockSales,
                 price: price,
                 sku: _sku.text.trim(),
                 sizes: const [],
@@ -686,6 +813,15 @@ class _ProductDialogState extends State<_ProductDialog> {
   late final TextEditingController _price;
   late String _categoryId;
   late String _productType;
+  bool _trackInventory = false;
+  String? _inventoryItemId;
+  List<Map<String, dynamic>> _inventoryItems = const [];
+  bool _inventoryItemsLoading = true;
+  String? _inventoryItemsError;
+  String _inventoryUnit = 'pcs';
+  late TextEditingController _inventoryReorderController;
+  bool _deductOnSale = true;
+  bool _allowOutOfStockSales = false;
   String? _drinkTemperature;
   late bool _active;
   late bool _available;
@@ -694,6 +830,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   @override
   void initState() {
     super.initState();
+    _loadInventoryItems();
     final p = widget.product;
     _name = TextEditingController(text: p.name);
     _description = TextEditingController(text: p.description ?? '');
@@ -702,11 +839,54 @@ class _ProductDialogState extends State<_ProductDialog> {
     _price = TextEditingController(text: p.price?.toString() ?? '');
     _categoryId = p.categoryId;
     _productType = p.productType;
+    _trackInventory = p.trackInventory;
+    _inventoryItemId = p.inventoryItemId;
+    _inventoryUnit = p.inventoryUnit;
+    _inventoryReorderController = TextEditingController(text: p.inventoryReorderLevel.toString());
+    _deductOnSale = p.deductOnSale;
+    _allowOutOfStockSales = p.allowOutOfStockSales;
     _drinkTemperature = p.drinkTemperature ??
         (p.productType.trim().toLowerCase() == 'drink' ? 'iced' : null);
     _active = p.active;
     _available = p.available;
     _kitchenPrepared = p.kitchenPrepared;
+  }
+
+  Future<void> _loadInventoryItems() async {
+    try {
+      final items = await _loadLinkableInventoryItems();
+      if (!mounted) return;
+      setState(() { _inventoryItems = items; _inventoryItemsLoading = false; _inventoryItemsError = null; });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _inventoryItemsLoading = false; _inventoryItemsError = e.toString(); });
+    }
+  }
+
+  Widget _linkedInventoryField() {
+    final items = [..._inventoryItems];
+    if (_inventoryItemId != null && !items.any((i) => i['id']?.toString() == _inventoryItemId)) {
+      items.add({'id': _inventoryItemId, 'name': 'Previously linked item', 'unit': _inventoryUnit});
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      DropdownButtonFormField<String?>(
+        value: _inventoryItemId,
+        decoration: const InputDecoration(labelText: 'Linked inventory item (optional)', helperText: 'Select the exact record; duplicate names are distinguished by UUID.'),
+        items: [const DropdownMenuItem<String?>(value: null, child: Text('Not linked')),
+          ...items.map((i) => DropdownMenuItem<String?>(value: i['id']?.toString(), child: Text(_inventoryItemLabel(i), overflow: TextOverflow.ellipsis)))],
+        onChanged: _inventoryItemsLoading ? null : (value) => setState(() {
+          _inventoryItemId = value;
+          final matches = _inventoryItems.where((i) => i['id']?.toString() == value).toList();
+          final selected = matches.isEmpty ? null : matches.first;
+          if (selected != null) {
+            _inventoryUnit = selected['unit']?.toString() ?? _inventoryUnit;
+            _inventoryReorderController.text = (selected['reorder_level'] ?? 0).toString();
+          }
+        }),
+      ),
+      if (_inventoryItemsLoading) const LinearProgressIndicator(),
+      if (_inventoryItemsError != null) Text('Could not load inventory items: $_inventoryItemsError', style: const TextStyle(color: Colors.red)),
+    ]);
   }
 
   @override
@@ -716,6 +896,7 @@ class _ProductDialogState extends State<_ProductDialog> {
     _image.dispose();
     _sku.dispose();
     _price.dispose();
+    _inventoryReorderController.dispose();
     super.dispose();
   }
 
@@ -793,6 +974,48 @@ class _ProductDialogState extends State<_ProductDialog> {
                 ),
               ],
               const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Track direct product inventory'),
+                subtitle: const Text('For accessories and resale items that do not use a recipe.'),
+                value: _trackInventory,
+                onChanged: (value) => setState(() => _trackInventory = value),
+              ),
+              if (_trackInventory) ...[
+                DropdownButtonFormField<String>(
+                  initialValue: _inventoryUnit,
+                  decoration: const InputDecoration(labelText: 'Stock unit'),
+                  items: const [
+                    DropdownMenuItem(value: 'pcs', child: Text('Pieces (pcs)')),
+                    DropdownMenuItem(value: 'g', child: Text('Grams (g)')),
+                    DropdownMenuItem(value: 'ml', child: Text('Milliliters (ml)')),
+                    DropdownMenuItem(value: 'pack', child: Text('Pack')),
+                    DropdownMenuItem(value: 'box', child: Text('Box')),
+                    DropdownMenuItem(value: 'set', child: Text('Set')),
+                  ],
+                  onChanged: (value) { if (value != null) setState(() => _inventoryUnit = value); },
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _inventoryReorderController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Reorder level', helperText: 'Alert when on-hand stock reaches this quantity.'),
+                ),
+                const SizedBox(height: 8),
+                _linkedInventoryField(),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Deduct stock on completed sale'),
+                  value: _deductOnSale,
+                  onChanged: (value) => setState(() => _deductOnSale = value),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Allow sale when out of stock'),
+                  value: _allowOutOfStockSales,
+                  onChanged: (value) => setState(() => _allowOutOfStockSales = value),
+                ),
+              ],
               TextField(
                   controller: _description,
                   maxLines: 2,
@@ -868,6 +1091,13 @@ class _ProductDialogState extends State<_ProductDialog> {
                 active: _active,
                 available: _available,
                 kitchenPrepared: _kitchenPrepared,
+                trackInventory: _trackInventory,
+                inventoryItemId: _inventoryItemId,
+                clearInventoryItemId: _inventoryItemId == null,
+                inventoryUnit: _inventoryUnit,
+                inventoryReorderLevel: num.tryParse(_inventoryReorderController.text.trim()) ?? 0,
+                deductOnSale: _deductOnSale,
+                allowOutOfStockSales: _allowOutOfStockSales,
                 price: _parsePrice(),
               ),
             );

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
 
 class InventoryMovementsPage extends StatefulWidget {
-  const InventoryMovementsPage({super.key});
+  const InventoryMovementsPage({super.key, this.initialItemName});
+
+  final String? initialItemName;
 
   @override
   State<InventoryMovementsPage> createState() => _InventoryMovementsPageState();
@@ -20,6 +22,9 @@ class _InventoryMovementsPageState extends State<InventoryMovementsPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialItemName != null && widget.initialItemName!.trim().isNotEmpty) {
+      _search.text = widget.initialItemName!.trim();
+    }
     _load();
   }
 

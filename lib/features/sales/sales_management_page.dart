@@ -11,130 +11,133 @@ import '../store_eod_page.dart';
 class SalesManagementPage extends StatelessWidget {
   const SalesManagementPage({super.key});
 
+  static const _ink = Color(0xFF171717);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F2ED),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF171717),
+        backgroundColor: _ink,
         foregroundColor: Colors.white,
         title: const Text(
-          'SALES MANAGEMENT',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          'SALES',
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
         ),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 1000
-              ? 3
-              : constraints.maxWidth >= 650
-                  ? 2
-                  : 1;
-          final width =
-              (constraints.maxWidth - (columns - 1) * 16 - 48) / columns;
-
+          final compact = constraints.maxWidth < 600;
           return ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             children: [
-              const SizedBox(height: 12),
-              const Icon(
-                Icons.point_of_sale_outlined,
-                size: 68,
-                color: Color(0xFFC69214),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'SALES MANAGEMENT',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Review sales performance, transactions and sales activity.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 28),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
+              Row(
                 children: [
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.bar_chart_outlined,
-                      'SALES DASHBOARD',
-                      'Review sales by date, category, product and kiosk.',
-                      const ReportingDashboardPage(),
-                    ),
+                  const CircleAvatar(
+                    radius: 24,
+                    backgroundColor: _ink,
+                    foregroundColor: Colors.white,
+                    child: Icon(Icons.point_of_sale_outlined, size: 25),
                   ),
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.receipt_long_outlined,
-                      'TRANSACTIONS',
-                      'Browse transactions, payments, items and kiosk activity.',
-                      const SalesTransactionsPage(),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.schedule_outlined,
-                      'HOURLY SALES',
-                      'Review transaction volume and sales by hour.',
-                      const HourlySalesPage(),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.inventory_2_outlined,
-                      'PRODUCT SALES',
-                      'Review quantities and revenue by product.',
-                      const ProductSalesPage(),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.category_outlined,
-                      'CATEGORY SALES',
-                      'Review quantities and revenue by category.',
-                      const CategorySalesPage(),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.payments_outlined,
-                      'PAYMENT SUMMARY',
-                      'Review payment count and total paid by payment method.',
-                      const PaymentSummaryPage(),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: _tile(
-                      context,
-                      Icons.event_available_outlined,
-                      'END OF DAY',
-                      'Review sales, payments and inventory consumption, then close the business date.',
-                      const StoreEodPage(),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SALES MANAGEMENT',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: .4,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Review sales, transactions and daily activity.',
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 22),
+              const Text(
+                'SALES & REPORTING',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const SizedBox(height: 10),
+              _grid(constraints.maxWidth, [
+                _tile(
+                  context,
+                  Icons.bar_chart_outlined,
+                  'Sales Dashboard',
+                  'Review sales by date, category, product and kiosk.',
+                  const ReportingDashboardPage(),
+                ),
+                _tile(
+                  context,
+                  Icons.receipt_long_outlined,
+                  'Transactions',
+                  'Browse transactions, payments, items and kiosk activity.',
+                  const SalesTransactionsPage(),
+                ),
+                _tile(
+                  context,
+                  Icons.schedule_outlined,
+                  'Hourly Sales',
+                  'Review transaction volume and sales by hour.',
+                  const HourlySalesPage(),
+                ),
+                _tile(
+                  context,
+                  Icons.inventory_2_outlined,
+                  'Product Sales',
+                  'Review quantities and revenue by product.',
+                  const ProductSalesPage(),
+                ),
+                _tile(
+                  context,
+                  Icons.category_outlined,
+                  'Category Sales',
+                  'Review quantities and revenue by category.',
+                  const CategorySalesPage(),
+                ),
+                _tile(
+                  context,
+                  Icons.payments_outlined,
+                  'Payment Summary',
+                  'Review payment count and total paid by payment method.',
+                  const PaymentSummaryPage(),
+                ),
+                _tile(
+                  context,
+                  Icons.event_available_outlined,
+                  'End of Day',
+                  'Review sales, payments and inventory consumption, then close the business date.',
+                  const StoreEodPage(),
+                ),
+              ]),
+              if (!compact) const SizedBox(height: 8),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _grid(double maxWidth, List<Widget> children) {
+    final columns = maxWidth >= 1100 ? 3 : maxWidth >= 700 ? 2 : 1;
+    final width = (maxWidth - 40 - (columns - 1) * 12) / columns;
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: children.map((tile) => SizedBox(width: width, child: tile)).toList(),
     );
   }
 
@@ -146,46 +149,42 @@ class SalesManagementPage extends StatelessWidget {
     Widget page,
   ) {
     return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => page),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => page),
+        ),
+        borderRadius: BorderRadius.circular(10),
         child: Padding(
-          padding: const EdgeInsets.all(22),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: const Color(0xFF171717),
+                radius: 22,
+                backgroundColor: _ink,
                 foregroundColor: Colors.white,
-                radius: 26,
-                child: Icon(icon),
+                child: Icon(icon, size: 21),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
+                      title.toUpperCase(),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: Colors.black54,
-                        height: 1.25,
-                      ),
+                      style: const TextStyle(color: Colors.black54, height: 1.25),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 4),
               const Icon(Icons.chevron_right),
             ],
           ),

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
 
 class InventoryWastagePage extends StatefulWidget {
-  const InventoryWastagePage({super.key});
+  const InventoryWastagePage({super.key, this.initialInventoryItemId});
+
+  final String? initialInventoryItemId;
 
   @override
   State<InventoryWastagePage> createState() => _InventoryWastagePageState();
@@ -63,6 +65,14 @@ class _InventoryWastagePageState extends State<InventoryWastagePage> {
             }
           }
           _selected = found;
+        }
+        if (_selected == null && widget.initialInventoryItemId != null) {
+          for (final item in items) {
+            if (item['id']?.toString() == widget.initialInventoryItemId) {
+              _selected = item;
+              break;
+            }
+          }
         }
       });
     } catch (e) {

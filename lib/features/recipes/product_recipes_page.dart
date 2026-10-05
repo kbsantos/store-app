@@ -87,10 +87,22 @@ class _ProductRecipesPageState extends State<ProductRecipesPage> {
         .toList(growable: false);
     if (q.isEmpty) return recipeRows;
     return recipeRows.where((r) {
-      return (r['product_name']?.toString().toLowerCase() ?? '').contains(q) ||
-          (r['product_id']?.toString().toLowerCase() ?? '').contains(q) ||
-          (r['size_name']?.toString().toLowerCase() ?? '').contains(q) ||
-          (r['size_id']?.toString().toLowerCase() ?? '').contains(q);
+      final productId = r['product_id']?.toString() ?? '';
+      final product = _product(productId);
+      final sizeLabel = _sizeLabel(r, product).trim().toLowerCase();
+      final productName =
+          (r['product_name']?.toString() ?? product?.name ?? '').toLowerCase();
+      final sizeName = (r['size_name']?.toString() ?? '').toLowerCase();
+      final sizeId = (r['size_id']?.toString() ?? '').toLowerCase();
+
+      // Match both the returned size name and the catalog-resolved label,
+      // so searching "Go Big", "Meal Addon", or a size ID works even when
+      // the RPC response omits size_name.
+      return productName.contains(q) ||
+          productId.toLowerCase().contains(q) ||
+          sizeName.contains(q) ||
+          sizeId.contains(q) ||
+          sizeLabel.contains(q);
     }).toList();
   }
 
@@ -148,12 +160,13 @@ class _ProductRecipesPageState extends State<ProductRecipesPage> {
     List<Map<String, dynamic>> existing = const [],
     List<String> existingSteps = const [],
   }) async {
-    final size = product.sizes.where((s) => s.sizeId == sizeId).firstOrNull;
+    // Preserve the exact recipe-row size ID, including non-catalog sizes
+    // such as meal_addon. Otherwise an unknown ID falls back to Regular.
     final selected = await showDialog<_RecipeInput>(
       context: context,
       builder: (_) => _RecipeDialog(
         product: product,
-        selectedSizeId: size?.sizeId,
+        selectedSizeId: sizeId,
         inventory: _inventory,
         existing: existing,
         existingSteps: existingSteps,
@@ -169,6 +182,49 @@ class _ProductRecipesPageState extends State<ProductRecipesPage> {
         'p_steps': selected.steps.map((instruction) => {'instruction': instruction}).toList(),
       });
       if (mounted) _snack('Recipe saved.');
+      await _load();
+    } catch (e) {
+      if (mounted) _snack(e.toString(), error: true);
+    }
+  }
+
+
+  Future<void> _deleteRecipe(Map<String, dynamic> row, CatalogProduct product) async {
+    final sizeId = row['size_id']?.toString();
+    final sizeLabel = _sizeLabel(row, product);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('DELETE RECIPE?'),
+        content: Text(
+          'Delete the recipe ingredients and preparation steps for '
+          '${product.name} — $sizeLabel? The catalog product itself will not be deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('CANCEL'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('DELETE RECIPE'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await _auth.client.rpc('save_store_product_recipe', params: {
+        'p_product_id': product.productId,
+        'p_size_id': sizeId,
+        'p_items': <Map<String, dynamic>>[],
+        'p_steps': <Map<String, dynamic>>[],
+      });
+      if (mounted) _snack('Recipe deleted for $sizeLabel.');
       await _load();
     } catch (e) {
       if (mounted) _snack(e.toString(), error: true);
@@ -409,9 +465,7 @@ class _ProductRecipesPageState extends State<ProductRecipesPage> {
                                     row['product_id']?.toString() ?? '';
                                 final product = _product(productId);
                                 final items = _itemsFor(row);
-                                final count =
-                                    (row['ingredient_count'] as num?)?.toInt() ??
-                                        items.length;
+                                final count = items.length;
                                 final preview = items.take(3).map((item) {
                                   final name =
                                       item['inventory_item_name']?.toString() ??
@@ -453,17 +507,21 @@ class _ProductRecipesPageState extends State<ProductRecipesPage> {
                                             ),
                                           ),
                                         ),
-                                        Chip(label: Text(_sizeLabel(row, product))),
+                                        Text(
+                                          _sizeLabel(row, product),
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
                                       ],
                                     ),
                                     subtitle: Text(
                                       count == 0
-                                          ? 'NO RECIPE • $productId'
+                                          ? 'NO RECIPE FOR THIS SIZE • $productId'
                                           : '$count ingredient${count == 1 ? '' : 's'} • $preview$more',
                                     ),
-                                    trailing: _canEdit
-                                        ? const Icon(Icons.chevron_right)
-                                        : null,
+                                    trailing: _canEdit ? const Icon(Icons.chevron_right) : null,
                                     onTap: _canEdit && product != null
                                         ? () => _openRecipe(
                                               product: product,
@@ -660,11 +718,15 @@ class _RecipeDialogState extends State<_RecipeDialog> {
     final selectedSize = widget.product.sizes
         .where((size) => size.sizeId == _sizeId)
         .firstOrNull;
+    final selectedSizeLabel = selectedSize?.name ??
+        (_sizeId?.trim().isNotEmpty == true
+            ? _sizeId!.replaceAll('_', ' ')
+            : null);
 
     return AlertDialog(
       title: Text(
         'Recipe — ${widget.product.name}'
-        '${selectedSize == null ? '' : ' • ${selectedSize.name}'}',
+        '${selectedSizeLabel == null ? '' : ' • $selectedSizeLabel'}',
       ),
       content: SizedBox(
         width: 720,

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/auth/store_management_auth.dart';
 
 class InventoryReceivingPage extends StatefulWidget {
-  const InventoryReceivingPage({super.key});
+  const InventoryReceivingPage({super.key, this.initialInventoryItemId});
+
+  final String? initialInventoryItemId;
 
   @override
   State<InventoryReceivingPage> createState() => _InventoryReceivingPageState();
@@ -56,6 +58,14 @@ class _InventoryReceivingPageState extends State<InventoryReceivingPage> {
             (item) => item?['id'] == id,
             orElse: () => null,
           );
+        }
+        if (_selected == null && widget.initialInventoryItemId != null) {
+          for (final item in items) {
+            if (item['id']?.toString() == widget.initialInventoryItemId) {
+              _selected = item;
+              break;
+            }
+          }
         }
       });
     } catch (e) {
