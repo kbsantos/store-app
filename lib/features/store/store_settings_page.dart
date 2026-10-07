@@ -6,6 +6,7 @@ import 'store_database_reset_page.dart';
 import 'store_profile_page.dart';
 import 'store_operating_hours_page.dart';
 import '../users/users_management_page.dart';
+import '../devices/devices_management_page.dart';
 
 class StoreSettingsPage extends StatelessWidget {
   const StoreSettingsPage({super.key});
@@ -65,6 +66,25 @@ class StoreSettingsPage extends StatelessWidget {
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const StoreOperatingHoursPage(),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(child: Icon(Icons.devices_other_outlined)),
+              title: const Text(
+                'Devices',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: const Text(
+                'Manage connected kiosks and store devices.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const DevicesManagementPage(),
                 ),
               ),
             ),

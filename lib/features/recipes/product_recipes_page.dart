@@ -189,47 +189,7 @@ class _ProductRecipesPageState extends State<ProductRecipesPage> {
   }
 
 
-  Future<void> _deleteRecipe(Map<String, dynamic> row, CatalogProduct product) async {
-    final sizeId = row['size_id']?.toString();
-    final sizeLabel = _sizeLabel(row, product);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('DELETE RECIPE?'),
-        content: Text(
-          'Delete the recipe ingredients and preparation steps for '
-          '${product.name} — $sizeLabel? The catalog product itself will not be deleted.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('CANCEL'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('DELETE RECIPE'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
 
-    try {
-      await _auth.client.rpc('save_store_product_recipe', params: {
-        'p_product_id': product.productId,
-        'p_size_id': sizeId,
-        'p_items': <Map<String, dynamic>>[],
-        'p_steps': <Map<String, dynamic>>[],
-      });
-      if (mounted) _snack('Recipe deleted for $sizeLabel.');
-      await _load();
-    } catch (e) {
-      if (mounted) _snack(e.toString(), error: true);
-    }
-  }
 
   Future<void> _add() async {
     final products = _recipeProducts;

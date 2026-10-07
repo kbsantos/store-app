@@ -5,7 +5,6 @@ import 'store_dashboard_page.dart';
 import '../sales/sales_management_page.dart';
 import '../store/store_settings_page.dart';
 import '../inventory/inventory_management_page.dart';
-import '../devices/devices_management_page.dart';
 import '../../core/auth/store_management_auth.dart';
 
 class StoreManagementHomePage extends StatefulWidget {
@@ -104,7 +103,6 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
         _MenuItem(Icons.inventory_2_outlined, 'Product', const CatalogManagerDashboardPage()),
         _MenuItem(Icons.point_of_sale_outlined, 'Sales', const SalesManagementPage()),
         _MenuItem(Icons.inventory_2_outlined, 'Inventory', const InventoryManagementPage()),
-        _MenuItem(Icons.devices_other_outlined, 'Devices', const DevicesManagementPage()),
       ];
 
   Widget _sideMenu(List<_MenuItem> items, {bool closeAfterTap = false}) {

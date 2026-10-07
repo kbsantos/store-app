@@ -530,7 +530,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       DropdownButtonFormField<String?>(
-        value: _inventoryItemId,
+        initialValue: _inventoryItemId,
         decoration: const InputDecoration(labelText: 'Linked inventory item (optional)', helperText: 'Select the exact record; duplicate names are distinguished by UUID.'),
         items: [const DropdownMenuItem<String?>(value: null, child: Text('Not linked')),
           ...items.map((i) => DropdownMenuItem<String?>(value: i['id']?.toString(), child: Text(_inventoryItemLabel(i), overflow: TextOverflow.ellipsis)))],
@@ -870,7 +870,7 @@ class _ProductDialogState extends State<_ProductDialog> {
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       DropdownButtonFormField<String?>(
-        value: _inventoryItemId,
+        initialValue: _inventoryItemId,
         decoration: const InputDecoration(labelText: 'Linked inventory item (optional)', helperText: 'Select the exact record; duplicate names are distinguished by UUID.'),
         items: [const DropdownMenuItem<String?>(value: null, child: Text('Not linked')),
           ...items.map((i) => DropdownMenuItem<String?>(value: i['id']?.toString(), child: Text(_inventoryItemLabel(i), overflow: TextOverflow.ellipsis)))],

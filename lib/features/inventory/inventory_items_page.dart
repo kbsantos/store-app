@@ -186,7 +186,7 @@ class _InventoryDialogState extends State<_InventoryDialog>{
     TextFormField(controller:_category,decoration:const InputDecoration(labelText:'Category (optional)')),const SizedBox(height:12),
     TextFormField(controller:_unit,decoration:const InputDecoration(labelText:'Unit (e.g. kg, L, pcs)'),validator:(v)=>v==null||v.trim().isEmpty?'Required':null),const SizedBox(height:12),
     TextFormField(controller:_reorder,keyboardType:const TextInputType.numberWithOptions(decimal:true),decoration:const InputDecoration(labelText:'Reorder level'),validator:(v)=>num.tryParse(v?.trim()??'')==null?'Enter a number':null),
-    DropdownButtonFormField<String>(value:_trackingType,decoration:const InputDecoration(labelText:'Stock tracking'),items:const [DropdownMenuItem(value:'tracked',child:Text('Tracked inventory')),DropdownMenuItem(value:'recipe_only',child:Text('Recipe-only ingredient'))],onChanged:(v)=>setState(()=>_trackingType=v??'tracked')),
+    DropdownButtonFormField<String>(initialValue:_trackingType,decoration:const InputDecoration(labelText:'Stock tracking'),items:const [DropdownMenuItem(value:'tracked',child:Text('Tracked inventory')),DropdownMenuItem(value:'recipe_only',child:Text('Recipe-only ingredient'))],onChanged:(v)=>setState(()=>_trackingType=v??'tracked')),
     const SizedBox(height:8),
     Text(_trackingType=='recipe_only'?'Recipe-only ingredients remain available in recipes but do not deduct physical stock or trigger low-stock alerts.':'Tracked items update physical stock and low-stock alerts from recipe consumption.',style:Theme.of(context).textTheme.bodySmall),
     SwitchListTile(contentPadding:EdgeInsets.zero,title:const Text('Active'),value:_active,onChanged:(v)=>setState(()=>_active=v)),
