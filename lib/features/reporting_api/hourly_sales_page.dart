@@ -5,6 +5,18 @@ import 'hourly_sale.dart';
 import 'reporting_pdf_service.dart';
 import 'reporting_pdf_viewer.dart';
 
+class _OperatingDay {
+  const _OperatingDay({
+    required this.isClosed,
+    required this.openMinutes,
+    required this.closeMinutes,
+  });
+
+  final bool isClosed;
+  final int? openMinutes;
+  final int? closeMinutes;
+}
+
 class HourlySalesPage extends StatefulWidget {
   const HourlySalesPage({super.key});
 
@@ -32,18 +44,28 @@ class _HourlySalesPageState extends State<HourlySalesPage> {
       _error = null;
     });
     try {
-      final result = await _client.rpc(
-        'get_store_hourly_sales',
-        params: {
-          'p_start_date': _dateOnly(_startDate),
-          'p_end_date': _dateOnly(_endDate),
-        },
-      );
-      final list = (result as List<dynamic>)
+      final results = await Future.wait<dynamic>([
+        _client.rpc(
+          'get_store_hourly_sales',
+          params: {
+            'p_start_date': _dateOnly(_startDate),
+            'p_end_date': _dateOnly(_endDate),
+          },
+        ),
+        _client.rpc('get_store_management_operating_hours'),
+      ]);
+
+      final operatingDays = _parseOperatingDays(results[1]);
+      final allRows = (results[0] as List<dynamic>)
           .map((e) => HourlySale.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList();
+      final visibleHours = _visibleOperatingHours(operatingDays);
+      final list = allRows.where((row) => visibleHours.contains(row.hour)).toList();
+
       if (!mounted) return;
-      setState(() => _rows = list);
+      setState(() {
+        _rows = list;
+      });
     } catch (error) {
       if (mounted) setState(() => _error = error.toString());
     } finally {
@@ -73,6 +95,70 @@ class _HourlySalesPageState extends State<HourlySalesPage> {
 
   String _dateOnly(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  Map<int, _OperatingDay> _parseOperatingDays(dynamic result) {
+    final days = <int, _OperatingDay>{};
+    for (final raw in result as List<dynamic>) {
+      final row = Map<String, dynamic>.from(raw as Map);
+      final day = (row['day_of_week'] as num?)?.toInt();
+      if (day == null || day < 0 || day > 6) continue;
+      days[day] = _OperatingDay(
+        isClosed: row['is_closed'] == true,
+        openMinutes: _parseMinutes(row['open_time']),
+        closeMinutes: _parseMinutes(row['close_time']),
+      );
+    }
+    if (days.length != 7) {
+      throw StateError('The store operating-hours schedule is incomplete.');
+    }
+    return days;
+  }
+
+  int? _parseMinutes(dynamic value) {
+    final text = value?.toString();
+    if (text == null || text.isEmpty) return null;
+    final parts = text.split(':');
+    if (parts.length < 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      return null;
+    }
+    return hour * 60 + minute;
+  }
+
+  Set<int> _visibleOperatingHours(Map<int, _OperatingDay> days) {
+    final visible = <int>{};
+    for (var date = _startDate; !date.isAfter(_endDate); date = date.add(const Duration(days: 1))) {
+      final day = days[date.weekday % 7];
+      if (day == null || day.isClosed || day.openMinutes == null || day.closeMinutes == null) {
+        continue;
+      }
+
+      final open = day.openMinutes!;
+      final close = day.closeMinutes!;
+      if (open == close) continue;
+
+      if (close > open) {
+        for (var hour = 0; hour < 24; hour++) {
+          final hourStart = hour * 60;
+          final hourEnd = hourStart + 60;
+          if (hourStart < close && hourEnd > open) visible.add(hour);
+        }
+      } else {
+        // A closing time earlier than the opening time represents an
+        // overnight schedule, e.g. 20:00 to 02:00.
+        for (var hour = 0; hour < 24; hour++) {
+          final hourStart = hour * 60;
+          final hourEnd = hourStart + 60;
+          final overlapsEvening = hourStart < 24 * 60 && hourEnd > open;
+          final overlapsAfterMidnight = hourStart < close;
+          if (overlapsEvening || overlapsAfterMidnight) visible.add(hour);
+        }
+      }
+    }
+    return visible;
+  }
 
   String _money(num value) => StoreCurrency.format(value);
 

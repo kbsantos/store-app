@@ -9,6 +9,27 @@ import 'reporting_api_service.dart';
 import 'reporting_pdf_font.dart';
 
 class StoreReportingPdfService {
+  static String _productTypeTitle(String value) {
+    switch (value.trim()) {
+      case 'drink':
+        return 'Drink';
+      case 'food':
+        return 'Food';
+      case 'accessory':
+        return 'Accessory';
+      case 'addOn':
+      case 'addon':
+      case 'add-on':
+        return 'Add-on';
+      case 'Uncategorized':
+        return 'Uncategorized';
+      default:
+        if (value.trim().isEmpty) return 'Uncategorized';
+        final normalized = value.trim();
+        return normalized[0].toUpperCase() + normalized.substring(1);
+    }
+  }
+
   static Future<Uint8List> buildProductSales({
     required String storeId,
     required DateTime startDate,
@@ -55,6 +76,57 @@ class StoreReportingPdfService {
             _displayName(row.category),
             '${row.quantity}',
             _money(row.sales),
+          ]).toList(),
+        ),
+      ],
+    );
+  }
+
+  static Future<Uint8List> buildProductTypeSales({
+    required String storeId,
+    required DateTime startDate,
+    required DateTime endDate,
+    required List<ReportingProductTypeSale> rows,
+    String device = 'ALL',
+  }) async {
+    final totals = <String, _ProductTypeTotal>{};
+    for (final row in rows) {
+      final key = row.productType.trim().isEmpty
+          ? 'Uncategorized'
+          : row.productType.trim();
+      final current = totals[key];
+      totals[key] = _ProductTypeTotal(
+        quantity: (current?.quantity ?? 0) + row.quantitySold,
+        sales: (current?.sales ?? 0) + row.totalSales,
+      );
+    }
+    final sorted = totals.entries.toList()
+      ..sort((a, b) => b.value.sales.compareTo(a.value.sales));
+    final qty = sorted.fold<int>(0, (sum, entry) => sum + entry.value.quantity);
+    final sales = sorted.fold<num>(0, (sum, entry) => sum + entry.value.sales);
+
+    return _buildDocument(
+      title: 'PRODUCT TYPE SALES REPORT',
+      storeId: storeId,
+      startDate: startDate,
+      endDate: endDate,
+      summary: [
+        _summaryRow('Product Types', '${sorted.length}'),
+        _summaryRow('Items Sold', '$qty'),
+        _summaryRow('Total Sales', _money(sales)),
+      ],
+      filters: ['Kiosk: $device'],
+      sections: [
+        _tableSection(
+          'PRODUCT TYPE SALES',
+          const ['PRODUCT TYPE', 'QTY SOLD', 'TOTAL SALES', '% OF SALES'],
+          sorted.map((entry) => [
+            _productTypeTitle(entry.key),
+            '${entry.value.quantity}',
+            _money(entry.value.sales),
+            sales == 0
+                ? '0.0%'
+                : '${(entry.value.sales / sales * 100).toStringAsFixed(1)}%',
           ]).toList(),
         ),
       ],
@@ -318,6 +390,12 @@ class _ProductTotal {
   const _ProductTotal({required this.name, required this.category, required this.quantity, required this.sales});
   final String name;
   final String category;
+  final int quantity;
+  final num sales;
+}
+
+class _ProductTypeTotal {
+  const _ProductTypeTotal({required this.quantity, required this.sales});
   final int quantity;
   final num sales;
 }

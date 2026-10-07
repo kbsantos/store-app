@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../catalog/catalog_manager_dashboard.dart';
 import 'store_dashboard_page.dart';
 import '../sales/sales_management_page.dart';
+import '../reporting_api/sales_reporting_center_page.dart';
 import '../store/store_settings_page.dart';
 import '../inventory/inventory_management_page.dart';
 import '../../core/auth/store_management_auth.dart';
@@ -102,6 +103,7 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
         _MenuItem(Icons.dashboard_outlined, 'Dashboard', const StoreDashboardPage()),
         _MenuItem(Icons.inventory_2_outlined, 'Product', const CatalogManagerDashboardPage()),
         _MenuItem(Icons.point_of_sale_outlined, 'Sales', const SalesManagementPage()),
+        _MenuItem(Icons.assessment_outlined, 'Reports', const SalesReportingCenterPage()),
         _MenuItem(Icons.inventory_2_outlined, 'Inventory', const InventoryManagementPage()),
       ];
 

@@ -197,8 +197,10 @@ class _InventoryManagementPageState extends State<InventoryManagementPage> {
     child: Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(children: [CircleAvatar(backgroundColor: color.withValues(alpha: .12), foregroundColor: color, child: Icon(icon)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w700)), Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color))]))]))),
   );
 
-  Widget _action(String label, IconData icon, Widget page) => OutlinedButton.icon(
-    onPressed: (!_canEdit && label != 'Inventory Movements' && label != 'Low Stock' && label != 'Stock Levels') ? null : () => _open(page),
+  Widget _action(String label, IconData icon, Widget page, {bool requiresEodPermission = false}) => OutlinedButton.icon(
+    onPressed: requiresEodPermission
+        ? (_auth.canCompleteEod ? () => _open(page) : null)
+        : ((!_canEdit && label != 'Inventory Movements' && label != 'Low Stock' && label != 'Stock Levels') ? null : () => _open(page)),
     icon: Icon(icon, size: 19, color: const Color(0xFF9B6B00)), label: Text(label),
     style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14), foregroundColor: const Color(0xFF26211B), side: const BorderSide(color: Color(0xFFDCCDB9)), backgroundColor: const Color(0xFFFFFAF3)),
   );

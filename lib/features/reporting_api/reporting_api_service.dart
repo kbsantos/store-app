@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'hourly_sale.dart';
+
 /// Read-only client for the MyCoffeeShop store-scoped reporting REST API.
 /// The caller must have an authenticated Supabase session whose JWT
 /// app_metadata contains the permitted store_id.
@@ -36,6 +38,28 @@ class ReportingApiService {
         .order('product_name')
         .order('sales_date');
     return rows.map(ReportingProductSale.fromMap).toList(growable: false);
+  }
+
+  Future<List<ReportingProductTypeSale>> getProductTypeSales({
+    required DateTime startDate,
+    required DateTime endDate,
+    String? deviceId,
+  }) async {
+    _requireSession();
+    var query = _client
+        .from('report_product_type_sales')
+        .select(
+          'store_id,device_id,sales_date,product_type,quantity_sold,total_sales',
+        )
+        .gte('sales_date', _dateOnly(startDate))
+        .lte('sales_date', _dateOnly(endDate));
+    if (deviceId != null && deviceId.trim().isNotEmpty) {
+      query = query.eq('device_id', deviceId.trim());
+    }
+    final rows = await query.order('product_type').order('sales_date');
+    return rows
+        .map(ReportingProductTypeSale.fromMap)
+        .toList(growable: false);
   }
 
   Future<List<ReportingCategorySale>> getCategorySales({
@@ -76,6 +100,102 @@ class ReportingApiService {
     }
     final rows = await query.order('sales_date');
     return rows.map(ReportingDailySale.fromMap).toList(growable: false);
+  }
+
+
+  Future<List<HourlySale>> getHourlySales({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    _requireSession();
+    final result = await _client.rpc(
+      'get_store_hourly_sales',
+      params: {
+        'p_start_date': _dateOnly(startDate),
+        'p_end_date': _dateOnly(endDate),
+      },
+    );
+    final rows = result is List ? result : const <dynamic>[];
+    return rows
+        .map((row) => HourlySale.fromMap(Map<String, dynamic>.from(row as Map)))
+        .toList(growable: false);
+  }
+
+  Future<List<Map<String, dynamic>>> getPaymentSummary({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    _requireSession();
+    final result = await _client.rpc(
+      'get_store_payment_summary',
+      params: {
+        'p_start_date': _dateOnly(startDate),
+        'p_end_date': _dateOnly(endDate),
+      },
+    );
+    final rows = result is List ? result : const <dynamic>[];
+    return rows
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .toList(growable: false);
+  }
+
+  Future<List<Map<String, dynamic>>> getTransactions({
+    required DateTime startDate,
+    required DateTime endDate,
+    String? search,
+    String? status,
+  }) async {
+    _requireSession();
+    final result = await _client.rpc(
+      'get_store_sales_transactions',
+      params: {
+        'p_start_date': _dateOnly(startDate),
+        'p_end_date': _dateOnly(endDate),
+        'p_search': search,
+        'p_status': status,
+      },
+    );
+    final rows = result is List ? result : const <dynamic>[];
+    return rows
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .toList(growable: false);
+  }
+
+
+  Future<List<Map<String, dynamic>>> getDiscountsAndCharges({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    _requireSession();
+    final result = await _client.rpc(
+      'get_store_discounts_charges',
+      params: {
+        'p_start_date': _dateOnly(startDate),
+        'p_end_date': _dateOnly(endDate),
+      },
+    );
+    final rows = result is List ? result : const <dynamic>[];
+    return rows
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .toList(growable: false);
+  }
+
+  Future<List<Map<String, dynamic>>> getEodReport({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    _requireSession();
+    final result = await _client.rpc(
+      'get_store_eod_reporting',
+      params: {
+        'p_start_date': _dateOnly(startDate),
+        'p_end_date': _dateOnly(endDate),
+      },
+    );
+    final rows = result is List ? result : const <dynamic>[];
+    return rows
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .toList(growable: false);
   }
 
   Future<List<ReportingDeviceSale>> getDeviceSales({
@@ -136,6 +256,32 @@ class ReportingProductSale {
         quantitySold: _toInt(map['quantity_sold']),
         totalSales: _toNum(map['total_sales']),
         averageUnitPrice: _toNum(map['average_unit_price']),
+      );
+}
+
+class ReportingProductTypeSale {
+  const ReportingProductTypeSale({
+    required this.storeId,
+    required this.deviceId,
+    required this.salesDate,
+    required this.productType,
+    required this.quantitySold,
+    required this.totalSales,
+  });
+
+  final String storeId, deviceId, productType;
+  final DateTime salesDate;
+  final int quantitySold;
+  final num totalSales;
+
+  factory ReportingProductTypeSale.fromMap(Map<String, dynamic> map) =>
+      ReportingProductTypeSale(
+        storeId: '${map['store_id'] ?? ''}',
+        deviceId: '${map['device_id'] ?? ''}',
+        salesDate: DateTime.parse('${map['sales_date']}'),
+        productType: '${map['product_type'] ?? 'Uncategorized'}',
+        quantitySold: _toInt(map['quantity_sold']),
+        totalSales: _toNum(map['total_sales']),
       );
 }
 

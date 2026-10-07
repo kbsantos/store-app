@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../reporting_api/reporting_dashboard_page.dart';
 import '../reporting_api/sales_transactions_page.dart';
-import '../reporting_api/hourly_sales_page.dart';
-import '../reporting_api/payment_summary_page.dart';
-import '../reporting_api/product_sales_page.dart';
-import '../reporting_api/category_sales_page.dart';
 import '../store_eod_page.dart';
 
 class SalesManagementPage extends StatelessWidget {
@@ -64,7 +59,7 @@ class SalesManagementPage extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               const Text(
-                'SALES & REPORTING',
+                'SALES',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
@@ -75,13 +70,6 @@ class SalesManagementPage extends StatelessWidget {
               _grid(constraints.maxWidth, [
                 _tile(
                   context,
-                  Icons.bar_chart_outlined,
-                  'Sales Dashboard',
-                  'Review sales by date, category, product and kiosk.',
-                  const ReportingDashboardPage(),
-                ),
-                _tile(
-                  context,
                   Icons.receipt_long_outlined,
                   'Transactions',
                   'Browse transactions, payments, items and kiosk activity.',
@@ -89,37 +77,9 @@ class SalesManagementPage extends StatelessWidget {
                 ),
                 _tile(
                   context,
-                  Icons.schedule_outlined,
-                  'Hourly Sales',
-                  'Review transaction volume and sales by hour.',
-                  const HourlySalesPage(),
-                ),
-                _tile(
-                  context,
-                  Icons.inventory_2_outlined,
-                  'Product Sales',
-                  'Review quantities and revenue by product.',
-                  const ProductSalesPage(),
-                ),
-                _tile(
-                  context,
-                  Icons.category_outlined,
-                  'Category Sales',
-                  'Review quantities and revenue by category.',
-                  const CategorySalesPage(),
-                ),
-                _tile(
-                  context,
-                  Icons.payments_outlined,
-                  'Payment Summary',
-                  'Review payment count and total paid by payment method.',
-                  const PaymentSummaryPage(),
-                ),
-                _tile(
-                  context,
                   Icons.event_available_outlined,
                   'End of Day',
-                  'Review sales, payments and inventory consumption, then close the business date.',
+                  'Complete and review the store end-of-day process.',
                   const StoreEodPage(),
                 ),
               ]),
