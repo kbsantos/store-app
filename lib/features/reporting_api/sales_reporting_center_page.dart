@@ -58,6 +58,24 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
 
   String _money(num value) => StoreCurrency.format(value);
 
+  String _productTypeLabel(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) return 'Uncategorized';
+    switch (normalized.toLowerCase()) {
+      case 'drink':
+        return 'Drink';
+      case 'food':
+        return 'Food';
+      case 'accessory':
+        return 'Accessory';
+      case 'addon':
+      case 'add-on':
+        return 'Add-on';
+      default:
+        return normalized[0].toUpperCase() + normalized.substring(1);
+    }
+  }
+
   _ReportOption get _selectedReport =>
       _reports.firstWhere((report) => report.key == _reportKey);
 
@@ -93,7 +111,9 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
           );
           break;
         case 'hourly':
-          _hourlyRows = await _api.getHourlySales(startDate: _start, endDate: _end);
+          _hourlyRows = (await _api.getHourlySales(startDate: _start, endDate: _end))
+              .where((row) => row.totalSales > 0)
+              .toList(growable: false);
           break;
         case 'product':
           _productRows = await _api.getProductSales(
@@ -486,7 +506,7 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
     final base = 'BiggerBrew_${_selectedReport.title.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_')}_${_date(_start)}_${_date(_end)}';
     try {
       if (format == 'PDF') {
-        await ReportingExportService.savePdf(filename: '$base.pdf', title: _selectedReport.title.toUpperCase(), subtitle: '${_selectedReport.subtitle} • ${_date(_start)} to ${_date(_end)}', headers: table.headers, rows: table.rows);
+        await ReportingExportService.savePdf(filename: '$base.pdf', title: _selectedReport.title.toUpperCase(), subtitle: '${_selectedReport.subtitle} | ${_date(_start)} to ${_date(_end)}', headers: table.headers, rows: table.rows);
       } else if (format == 'CSV') {
         await ReportingExportService.saveCsv(filename: '$base.csv', headers: table.headers, rows: table.rows);
       } else if (format == 'Excel') {
@@ -494,7 +514,7 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       } else {
         await ReportingExportService.printReport(
           title: _selectedReport.title.toUpperCase(),
-          subtitle: '${_selectedReport.subtitle} • ${_date(_start)} to ${_date(_end)}',
+          subtitle: '${_selectedReport.subtitle} | ${_date(_start)} to ${_date(_end)}',
           headers: table.headers,
           rows: table.rows,
         );
@@ -526,7 +546,7 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       case 'product_type':
         final totals = <String, List<num>>{};
         for (final row in _productTypeRows) {
-          final key = row.productType.trim().isEmpty ? 'Uncategorized' : row.productType.trim();
+          final key = _productTypeLabel(row.productType);
           final current = totals[key] ?? [0, 0];
           totals[key] = [current[0] + row.quantitySold, current[1] + row.totalSales];
         }
@@ -597,7 +617,7 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       case 'summary':
         return _summaryPreview();
       case 'daily':
-        return _dailyPreview();
+        return _summaryPreview();
       case 'hourly':
         return _hourlyPreview();
       case 'product':
@@ -638,13 +658,11 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
           _dailyRows.map((row) => [
             _date(row.salesDate), '${row.transactionCount}', _money(row.subtotal), _money(row.discount), _money(row.totalSales),
           ]).toList(),
-          onRowTap: (index) => _drillIntoDaily(_dailyRows[index]),
         ),
       ],
     );
   }
 
-  Widget _dailyPreview() => _summaryPreview();
 
   Widget _hourlyPreview() => _previewCard(children: [
         _kpiRow([
@@ -657,15 +675,6 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
         _dataTable(
           const ['HOUR', 'TRANSACTIONS', 'ITEMS SOLD', 'TOTAL SALES'],
           _hourlyRows.map((r) => [r.label, '${r.transactionCount}', '${r.itemCount}', _money(r.totalSales)]).toList(),
-          onRowTap: (index) => _showDrilldown(
-            'Hourly Sales',
-            _hourlyRows[index].label,
-            [
-              _detail('Transactions', '${_hourlyRows[index].transactionCount}'),
-              _detail('Items Sold', '${_hourlyRows[index].itemCount}'),
-              _detail('Total Sales', _money(_hourlyRows[index].totalSales)),
-            ],
-          ),
         ),
       ]);
 
@@ -714,7 +723,6 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       _dataTable(
         const ['PRODUCT', 'CATEGORY', 'QTY SOLD', 'TOTAL SALES'],
         rows.take(50).map((r) => [r.productName, r.category, '${r.quantitySold}', _money(r.totalSales)]).toList(),
-        onRowTap: (index) => _drillIntoProduct(rows.take(50).toList()[index]),
       ),
     ]);
   }
@@ -722,7 +730,7 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
   Widget _productTypePreview() {
     final totals = <String, List<num>>{};
     for (final row in _productTypeRows) {
-      final key = row.productType.trim().isEmpty ? 'Uncategorized' : row.productType.trim();
+      final key = _productTypeLabel(row.productType);
       final current = totals[key] ?? [0, 0];
       totals[key] = [current[0] + row.quantitySold, current[1] + row.totalSales];
     }
@@ -734,15 +742,6 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       _dataTable(
         const ['PRODUCT TYPE', 'QTY SOLD', 'TOTAL SALES', '% OF SALES'],
         rows.map((r) => [r.key, '${r.value[0].toInt()}', _money(r.value[1]), sales == 0 ? '0.0%' : '${(r.value[1] / sales * 100).toStringAsFixed(1)}%']).toList(),
-        onRowTap: (index) => _showDrilldown(
-          'Product Type Sales',
-          rows[index].key,
-          [
-            _detail('Items Sold', '${rows[index].value[0].toInt()}'),
-            _detail('Total Sales', _money(rows[index].value[1])),
-            _detail('Share of Sales', sales == 0 ? '0.0%' : '${(rows[index].value[1] / sales * 100).toStringAsFixed(1)}%'),
-          ],
-        ),
       ),
     ]);
   }
@@ -761,7 +760,6 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       _dataTable(
         const ['CATEGORY', 'QTY SOLD', 'TOTAL SALES', '% OF SALES'],
         rows.map((r) => [r.key, '${r.value[0].toInt()}', _money(r.value[1]), sales == 0 ? '0.0%' : '${(r.value[1] / sales * 100).toStringAsFixed(1)}%']).toList(),
-        onRowTap: (index) => _drillIntoCategory(rows[index].key),
       ),
     ]);
   }
@@ -779,145 +777,8 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
       _dataTable(
         const ['DEVICE', 'TRANSACTIONS', 'TOTAL SALES', 'DISCOUNT'],
         entries.map((r) => [r.key, '${r.value[0].toInt()}', _money(r.value[1]), _money(r.value[2])]).toList(),
-        onRowTap: (index) => _drillIntoDevice(entries[index].key),
       ),
     ]);
-  }
-
-  Widget _detail(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          children: [
-            Expanded(child: Text(label, style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700))),
-            Flexible(child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w900))),
-          ],
-        ),
-      );
-
-  Future<void> _showDrilldown(String title, String subtitle, List<Widget> details, {List<Widget> actions = const []}) async {
-    if (!mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
-        content: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(subtitle, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-              const Divider(height: 24),
-              ...details,
-            ],
-          ),
-        ),
-        actions: [
-          ...actions,
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('CLOSE')),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _drillIntoDaily(ReportingDailySale row) async {
-    await _showDrilldown(
-      'Daily Sales',
-      _date(row.salesDate),
-      [
-        _detail('Transactions', '${row.transactionCount}'),
-        _detail('Subtotal', _money(row.subtotal)),
-        _detail('Discount', _money(row.discount)),
-        _detail('Total Sales', _money(row.totalSales)),
-      ],
-      actions: [
-        TextButton(
-          onPressed: () async {
-            Navigator.of(context).pop();
-            setState(() {
-              _reportKey = 'hourly';
-              _start = DateTime(row.salesDate.year, row.salesDate.month, row.salesDate.day);
-              _end = _start;
-            });
-            await _load();
-          },
-          child: const Text('VIEW HOURLY'),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _drillIntoProduct(ReportingProductSale row) async {
-    await _showDrilldown(
-      'Product Sales',
-      row.productName,
-      [
-        _detail('Category', row.category),
-        _detail('Product ID', row.productId),
-        _detail('Quantity Sold', '${row.quantitySold}'),
-        _detail('Total Sales', _money(row.totalSales)),
-        _detail('Average Unit Price', _money(row.averageUnitPrice)),
-      ],
-      actions: [
-        TextButton(
-          onPressed: () async {
-            Navigator.of(context).pop();
-            setState(() {
-              _reportKey = 'product';
-              _category = row.category;
-            });
-            await _load();
-          },
-          child: const Text('VIEW CATEGORY'),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _drillIntoCategory(String category) async {
-    await _showDrilldown(
-      'Category Sales',
-      category,
-      [
-        _detail('Period', '${_date(_start)} → ${_date(_end)}'),
-        _detail('Category', category),
-      ],
-      actions: [
-        TextButton(
-          onPressed: () async {
-            Navigator.of(context).pop();
-            setState(() {
-              _reportKey = 'product';
-              _category = category;
-            });
-            await _load();
-          },
-          child: const Text('VIEW PRODUCTS'),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _drillIntoDevice(String device) async {
-    await _showDrilldown(
-      'Sales by Device',
-      device,
-      [_detail('Device', device), _detail('Period', '${_date(_start)} → ${_date(_end)}')],
-      actions: [
-        TextButton(
-          onPressed: () async {
-            Navigator.of(context).pop();
-            setState(() {
-              _reportKey = 'product';
-              _device = device;
-              _category = 'ALL';
-            });
-            await _load();
-          },
-          child: const Text('VIEW PRODUCTS'),
-        ),
-      ],
-    );
   }
 
   Widget _previewCard({required List<Widget> children}) => Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children)));
@@ -931,31 +792,24 @@ class _SalesReportingCenterPageState extends State<SalesReportingCenterPage> {
 
   Widget _kpi(String label, String value) => Card(margin: EdgeInsets.zero, child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700)), const SizedBox(height: 5), Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900))])));
 
-  Widget _dataTable(List<String> headers, List<List<String>> rows, {ValueChanged<int>? onRowTap}) {
-    if (rows.isEmpty) return const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('No sales records match the selected filters.')));
+  Widget _dataTable(List<String> headers, List<List<String>> rows) {
+    if (rows.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: Text('No sales records match the selected filters.')),
+      );
+    }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columns: [
-          ...headers.map((header) => DataColumn(label: Text(header))),
-          if (onRowTap != null) const DataColumn(label: Text('DETAILS')),
-        ],
-        rows: List<DataRow>.generate(rows.length, (index) {
-          final row = rows[index];
-          return DataRow(
-            cells: [
-              ...row.map((value) => DataCell(Text(value))),
-              if (onRowTap != null)
-                DataCell(
-                  IconButton(
-                    tooltip: 'View details',
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: () => onRowTap(index),
-                  ),
-                ),
-            ],
-          );
-        }),
+        columns: headers.map((header) => DataColumn(label: Text(header))).toList(),
+        rows: rows
+            .map(
+              (row) => DataRow(
+                cells: row.map((value) => DataCell(Text(value))).toList(),
+              ),
+            )
+            .toList(),
       ),
     );
   }

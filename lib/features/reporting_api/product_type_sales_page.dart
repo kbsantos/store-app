@@ -101,23 +101,29 @@ class _ProductTypeSalesPageState extends State<ProductTypeSalesPage> {
       _totals.values.fold<num>(0, (sum, row) => sum + row.sales);
 
   String _productTypeTitle(String value) {
-    switch (value.trim()) {
+    final raw = value.trim();
+    if (raw.isEmpty) return 'Uncategorized';
+
+    // Product Type is stored as a stable catalog value. Always render the
+    // customer-facing label instead of exposing the internal value.
+    switch (raw.toLowerCase().replaceAll('_', '-')) {
       case 'drink':
         return 'Drink';
       case 'food':
         return 'Food';
       case 'accessory':
         return 'Accessory';
-      case 'addOn':
       case 'addon':
       case 'add-on':
         return 'Add-on';
-      case 'Uncategorized':
+      case 'uncategorized':
         return 'Uncategorized';
       default:
-        if (value.trim().isEmpty) return 'Uncategorized';
-        final normalized = value.trim();
-        return normalized[0].toUpperCase() + normalized.substring(1);
+        return raw
+            .split(RegExp(r'[\s_-]+'))
+            .where((part) => part.isNotEmpty)
+            .map((part) => '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}')
+            .join(' ');
     }
   }
 

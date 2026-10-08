@@ -13,4 +13,16 @@ void main() {
     expect(sql, contains('sum(r.reconciled_item_total) as total_sales'));
     expect(sql, contains('grant select on public.report_product_type_sales to authenticated'));
   });
+
+  test('product type report uses customer-facing labels', () {
+    final source = File(
+      'lib/features/reporting_api/sales_reporting_center_page.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('_productTypeLabel'));
+    expect(source, contains("'Drink'"));
+    expect(source, contains("'Food'"));
+    expect(source, contains("'Accessory'"));
+    expect(source, contains("'Add-on'"));
+  });
 }

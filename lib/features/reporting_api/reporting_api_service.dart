@@ -118,6 +118,7 @@ class ReportingApiService {
     final rows = result is List ? result : const <dynamic>[];
     return rows
         .map((row) => HourlySale.fromMap(Map<String, dynamic>.from(row as Map)))
+        .where((row) => row.totalSales > 0)
         .toList(growable: false);
   }
 
@@ -167,17 +168,43 @@ class ReportingApiService {
     required DateTime endDate,
   }) async {
     _requireSession();
-    final result = await _client.rpc(
-      'get_store_discounts_charges',
-      params: {
-        'p_start_date': _dateOnly(startDate),
-        'p_end_date': _dateOnly(endDate),
-      },
-    );
-    final rows = result is List ? result : const <dynamic>[];
-    return rows
-        .map((row) => Map<String, dynamic>.from(row as Map))
-        .toList(growable: false);
+    try {
+      final result = await _client.rpc(
+        'get_store_discounts_charges',
+        params: {
+          'p_start_date': _dateOnly(startDate),
+          'p_end_date': _dateOnly(endDate),
+        },
+      );
+      final rows = result is List ? result : const <dynamic>[];
+      return rows
+          .map((row) => Map<String, dynamic>.from(row as Map))
+          .toList(growable: false);
+    } on PostgrestException catch (error) {
+      // Phase 3's optional RPC may not yet be installed in an existing store.
+      // Fall back to the existing daily-sales contract so the report remains
+      // usable without requiring a live database migration just to render it.
+      if (!error.message.contains('get_store_discounts_charges') &&
+          error.code != 'PGRST202') {
+        rethrow;
+      }
+      final daily = await getDailySales(
+        startDate: startDate,
+        endDate: endDate,
+      );
+      return daily
+          .map(
+            (row) => <String, dynamic>{
+              'salesDate': row.salesDate,
+              'transactionCount': row.transactionCount,
+              'subtotal': row.subtotal,
+              'discount': row.discount,
+              'charges': 0,
+              'totalSales': row.totalSales,
+            },
+          )
+          .toList(growable: false);
+    }
   }
 
   Future<List<Map<String, dynamic>>> getEodReport({

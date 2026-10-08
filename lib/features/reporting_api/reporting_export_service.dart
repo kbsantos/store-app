@@ -5,6 +5,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import 'reporting_pdf_font.dart';
+
 class ReportingExportService {
   static Future<void> saveCsv({
     required String filename,
@@ -51,9 +53,11 @@ class ReportingExportService {
     required List<List<String>> rows,
   }) async {
     final document = pw.Document();
+    final theme = await StoreReportingPdfFont.theme();
     document.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
+        theme: theme,
         margin: const pw.EdgeInsets.all(24),
         build: (_) => [
           pw.Text(title, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
@@ -83,9 +87,11 @@ class ReportingExportService {
     await Printing.layoutPdf(
       onLayout: (_) async {
         final document = pw.Document();
+        final theme = await StoreReportingPdfFont.theme();
         document.addPage(
           pw.MultiPage(
             pageFormat: PdfPageFormat.a4.landscape,
+            theme: theme,
             margin: const pw.EdgeInsets.all(24),
             build: (_) => [
               pw.Text(title, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
