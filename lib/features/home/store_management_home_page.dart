@@ -12,7 +12,8 @@ class StoreManagementHomePage extends StatefulWidget {
   const StoreManagementHomePage({super.key});
 
   @override
-  State<StoreManagementHomePage> createState() => _StoreManagementHomePageState();
+  State<StoreManagementHomePage> createState() =>
+      _StoreManagementHomePageState();
 }
 
 class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
@@ -50,7 +51,8 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
             final storeName = snapshot.data ?? 'MyCoffeeShop';
             return Text(
               storeName,
-              style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: .7),
+              style: const TextStyle(
+                  fontWeight: FontWeight.w900, letterSpacing: .7),
               overflow: TextOverflow.ellipsis,
             );
           },
@@ -100,11 +102,16 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
   }
 
   List<_MenuItem> _menuItems() => [
-        _MenuItem(Icons.dashboard_outlined, 'Dashboard', const StoreDashboardPage()),
-        _MenuItem(Icons.inventory_2_outlined, 'Product', const CatalogManagerDashboardPage()),
-        _MenuItem(Icons.point_of_sale_outlined, 'Sales', const SalesManagementPage()),
-        _MenuItem(Icons.assessment_outlined, 'Reports', const SalesReportingCenterPage()),
-        _MenuItem(Icons.inventory_2_outlined, 'Inventory', const InventoryManagementPage()),
+        _MenuItem(
+            Icons.dashboard_outlined, 'Dashboard', const StoreDashboardPage()),
+        _MenuItem(Icons.inventory_2_outlined, 'Product',
+            const CatalogManagerDashboardPage()),
+        _MenuItem(
+            Icons.point_of_sale_outlined, 'Sales', const SalesManagementPage()),
+        _MenuItem(Icons.assessment_outlined, 'Reports',
+            const SalesReportingCenterPage()),
+        _MenuItem(Icons.inventory_2_outlined, 'Inventory',
+            const InventoryManagementPage()),
       ];
 
   Widget _sideMenu(List<_MenuItem> items, {bool closeAfterTap = false}) {
@@ -121,10 +128,22 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
                 builder: (context, snapshot) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.storefront_outlined, color: Color(0xFFC69214), size: 34),
+                    const Icon(Icons.storefront_outlined,
+                        color: Color(0xFFC69214), size: 34),
                     const SizedBox(height: 10),
-                    const Text('BIGGER BREW', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                    Text(snapshot.data ?? 'STORE MANAGEMENT', style: const TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: .8), overflow: TextOverflow.ellipsis),
+                    const Text('',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1)),
+                    Text(snapshot.data ?? 'STORE MANAGEMENT',
+                        style: const TextStyle(
+                            color: Colors.white60,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: .8),
+                        overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -132,7 +151,8 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
             const Divider(color: Colors.white12, height: 1),
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 4),
                 itemBuilder: (context, index) {
@@ -141,16 +161,24 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       if (closeAfterTap) Navigator.of(context).pop();
-                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => item.page));
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (_) => item.page));
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 13),
                       child: Row(
                         children: [
                           Icon(item.icon, color: Colors.white70, size: 21),
                           const SizedBox(width: 14),
-                          Expanded(child: Text(item.title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700))),
-                          const Icon(Icons.chevron_right, color: Colors.white38, size: 19),
+                          Expanded(
+                              child: Text(item.title,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700))),
+                          const Icon(Icons.chevron_right,
+                              color: Colors.white38, size: 19),
                         ],
                       ),
                     ),
@@ -160,7 +188,8 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 10, 18, 20),
-              child: Text('Store ${_auth.storeId}', style: const TextStyle(color: Colors.white38, fontSize: 11)),
+              child: Text('Store ${_auth.storeId}',
+                  style: const TextStyle(color: Colors.white38, fontSize: 11)),
             ),
           ],
         ),
@@ -177,19 +206,30 @@ class _StoreManagementHomePageState extends State<StoreManagementHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.storefront_outlined, size: 78, color: Color(0xFFC69214)),
+              const Icon(Icons.storefront_outlined,
+                  size: 78, color: Color(0xFFC69214)),
               const SizedBox(height: 18),
               const Text(
                 'Store Management',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, letterSpacing: .5),
+                style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .5),
               ),
               const SizedBox(height: 8),
-              const Text('Use the menu on the left to manage your store, products, sales and operations.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, fontSize: 16, height: 1.4)),
+              const Text(
+                  'Use the menu on the left to manage your store, products, sales and operations.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.black54, fontSize: 16, height: 1.4)),
               const SizedBox(height: 26),
               FutureBuilder<String>(
                 future: _storeNameFuture,
-                builder: (context, snapshot) => Text(snapshot.data ?? 'MyCoffeeShop', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                builder: (context, snapshot) => Text(
+                    snapshot.data ?? 'MyCoffeeShop',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w800)),
               ),
             ],
           ),

@@ -1,4 +1,4 @@
--- Bigger Brew / MyCoffeeShop
+--  / MyCoffeeShop
 -- Catalog synchronization state for multi-kiosk stores.
 --
 -- The store master remains authoritative. Each kiosk reports the master

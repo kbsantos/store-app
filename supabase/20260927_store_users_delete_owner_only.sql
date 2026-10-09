@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: owner-only user deletion
+--  Store Management: owner-only user deletion
 -- Admins retain the ability to disable users, but cannot permanently delete them.
 -- Deletion removes the employee's Supabase Auth account as well as its store
 -- membership. Only an Owner can invoke these functions.

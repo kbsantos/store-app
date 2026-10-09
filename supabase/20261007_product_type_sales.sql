@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: Product Type Sales reporting.
+--  Store Management: Product Type Sales reporting.
 --
 -- Product Type Sales is derived from the same reconciled transaction layer used
 -- by Product Sales and Category Sales. Product type comes from the current

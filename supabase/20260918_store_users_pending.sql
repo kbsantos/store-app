@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: pending employee records
+--  Store Management: pending employee records
 -- Allows a store manager to create an employee record before the employee has
 -- a Supabase Auth account. No password is created or stored by the Store app.
 

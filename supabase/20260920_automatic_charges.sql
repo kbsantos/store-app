@@ -1,4 +1,4 @@
--- Bigger Brew Store Management K7.5: automatic charges / fees
+--  Store Management K7.5: automatic charges / fees
 -- Mandatory catalog charges are distinct from product auto-apply add-ons.
 -- Auto-apply add-ons remain product-specific and removable; these charges are
 -- centrally managed and intended to be mandatory when the kiosk consumes them.
@@ -21,7 +21,7 @@ create table if not exists public.catalog_automatic_charges (
 
 alter table public.catalog_automatic_charges enable row level security;
 
--- Bigger Brew Store Management: product-option auto-apply
+--  Store Management: product-option auto-apply
 -- Adds an assignment-level flag so an add-on can be selected by default for a
 -- specific product while remaining removable by the customer at the kiosk.
 
@@ -258,7 +258,7 @@ grant execute on function public.publish_store_catalog_from_management(text, jso
 
 notify pgrst, 'reload schema';
 
--- Bigger Brew Store Management: publish Auto Apply to kiosk master reads
+--  Store Management: publish Auto Apply to kiosk master reads
 -- The Store Management catalog already persists auto_apply. This migration
 -- completes the shared master contract consumed by kiosk get_store_catalog().
 

@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: transaction-authoritative product/category sales.
+--  Store Management: transaction-authoritative product/category sales.
 --
 -- The Store Dashboard's financial sales total is sourced from transactions.total.
 -- Product/category reports historically summed transaction_items.total directly.

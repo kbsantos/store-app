@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: use the current catalog category for sales reporting.
+--  Store Management: use the current catalog category for sales reporting.
 --
 -- Transaction item category values are historical snapshots and may become stale
 -- when a product is re-categorized in the current catalog. Sales reports should

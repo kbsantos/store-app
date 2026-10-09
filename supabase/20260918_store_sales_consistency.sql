@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: sales/reporting consistency hardening.
+--  Store Management: sales/reporting consistency hardening.
 --
 -- All management sales surfaces use the same definition of a completed sale:
 -- completed, complete, paid, or closed. Cancelled/void/refunded/draft/pending

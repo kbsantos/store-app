@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: product-option auto-apply
+--  Store Management: product-option auto-apply
 -- Adds an assignment-level flag so an add-on can be selected by default for a
 -- specific product while remaining removable by the customer at the kiosk.
 

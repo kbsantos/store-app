@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: FINAL category source for sales reporting.
+--  Store Management: FINAL category source for sales reporting.
 --
 -- IMPORTANT:
 -- Apply this migration AFTER 20260918_store_sales_consistency.sql and any

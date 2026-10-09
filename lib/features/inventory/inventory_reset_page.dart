@@ -21,6 +21,7 @@ class _InventoryResetPageState extends State<InventoryResetPage> {
   bool _resetting = false;
   String? _error;
   int _completed = 0;
+  int _recipeOnlyCount = 0;
 
   bool get _canEdit => _auth.canManageInventory;
 
@@ -39,14 +40,37 @@ class _InventoryResetPageState extends State<InventoryResetPage> {
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final result = await _auth.client.rpc('get_store_inventory_stock_levels');
-      final rows = (result as List? ?? const [])
+      final results = await Future.wait<dynamic>([
+        _auth.client.rpc('get_store_inventory_stock_levels'),
+        _auth.client.rpc('get_store_inventory_items'),
+      ]);
+      final trackingById = <String, String>{};
+      for (final raw in (results[1] as List? ?? const [])) {
+        final item = Map<String, dynamic>.from(raw as Map);
+        final id = item['id']?.toString();
+        if (id != null) {
+          trackingById[id] = item['tracking_type']?.toString() ?? 'tracked';
+        }
+      }
+      final allRows = (results[0] as List? ?? const [])
           .map((row) => Map<String, dynamic>.from(row as Map))
           .where((row) => row['is_active'] != false)
+          .map((row) => {
+                ...row,
+                'tracking_type': trackingById[row['id']?.toString()] ??
+                    row['tracking_type']?.toString() ?? 'tracked',
+              })
+          .toList();
+      final recipeOnlyCount = allRows
+          .where((row) => row['tracking_type'] == 'recipe_only')
+          .length;
+      final rows = allRows
+          .where((row) => row['tracking_type'] != 'recipe_only')
           .toList();
       if (!mounted) return;
       setState(() {
         _items = rows;
+        _recipeOnlyCount = recipeOnlyCount;
         final validIds = rows.map((e) => e['id'].toString()).toSet();
         _selectedIds.removeWhere((id) => !validIds.contains(id));
         _loading = false;
@@ -141,6 +165,17 @@ class _InventoryResetPageState extends State<InventoryResetPage> {
           const SizedBox(height: 8),
           const Text('Choose inventory items to set their on-hand stock to zero. The reset is recorded as an adjustment movement; it does not delete history or change reorder levels or product links.'),
           const SizedBox(height: 16),
+          if (_recipeOnlyCount > 0)
+            Card(
+              color: Colors.blueGrey.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  '$_recipeOnlyCount recipe-only item(s) are hidden because they do not have physical stock movements.',
+                  style: const TextStyle(color: Colors.black87),
+                ),
+              ),
+            ),
           if (!_canEdit) const Card(child: ListTile(leading: Icon(Icons.lock_outline), title: Text('Read-only access'), subtitle: Text('Owner, manager or admin access is required to reset stock.'))),
           TextField(controller: _reason, enabled: !_resetting, decoration: const InputDecoration(labelText: 'Adjustment reason', border: OutlineInputBorder(), hintText: 'e.g. Opening stock reset')),
           const SizedBox(height: 12),

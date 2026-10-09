@@ -49,7 +49,8 @@ class StoreReportingPdfService {
         sales: (current?.sales ?? 0) + row.totalSales,
       );
     }
-    final sorted = totals.values.toList()..sort((a, b) => b.sales.compareTo(a.sales));
+    final sorted = totals.values.toList()
+      ..sort((a, b) => b.sales.compareTo(a.sales));
     final qty = sorted.fold<int>(0, (sum, row) => sum + row.quantity);
     final sales = sorted.fold<num>(0, (sum, row) => sum + row.sales);
 
@@ -71,12 +72,14 @@ class StoreReportingPdfService {
         _tableSection(
           'PRODUCT SALES',
           const ['PRODUCT', 'CATEGORY', 'QTY SOLD', 'TOTAL SALES'],
-          sorted.map((row) => [
-            _displayName(row.name),
-            _displayName(row.category),
-            '${row.quantity}',
-            _money(row.sales),
-          ]).toList(),
+          sorted
+              .map((row) => [
+                    _displayName(row.name),
+                    _displayName(row.category),
+                    '${row.quantity}',
+                    _money(row.sales),
+                  ])
+              .toList(),
         ),
       ],
     );
@@ -120,14 +123,16 @@ class StoreReportingPdfService {
         _tableSection(
           'PRODUCT TYPE SALES',
           const ['PRODUCT TYPE', 'QTY SOLD', 'TOTAL SALES', '% OF SALES'],
-          sorted.map((entry) => [
-            _productTypeTitle(entry.key),
-            '${entry.value.quantity}',
-            _money(entry.value.sales),
-            sales == 0
-                ? '0.0%'
-                : '${(entry.value.sales / sales * 100).toStringAsFixed(1)}%',
-          ]).toList(),
+          sorted
+              .map((entry) => [
+                    _productTypeTitle(entry.key),
+                    '${entry.value.quantity}',
+                    _money(entry.value.sales),
+                    sales == 0
+                        ? '0.0%'
+                        : '${(entry.value.sales / sales * 100).toStringAsFixed(1)}%',
+                  ])
+              .toList(),
         ),
       ],
     );
@@ -148,7 +153,8 @@ class StoreReportingPdfService {
         sales: (current?.sales ?? 0) + row.totalSales,
       );
     }
-    final sorted = totals.entries.toList()..sort((a, b) => b.value.sales.compareTo(a.value.sales));
+    final sorted = totals.entries.toList()
+      ..sort((a, b) => b.value.sales.compareTo(a.value.sales));
     final qty = sorted.fold<int>(0, (sum, entry) => sum + entry.value.quantity);
     final sales = sorted.fold<num>(0, (sum, entry) => sum + entry.value.sales);
 
@@ -167,12 +173,16 @@ class StoreReportingPdfService {
         _tableSection(
           'CATEGORY SALES',
           const ['CATEGORY', 'QTY SOLD', 'TOTAL SALES', 'AVG ITEM PRICE'],
-          sorted.map((entry) => [
-            _displayName(entry.key),
-            '${entry.value.quantity}',
-            _money(entry.value.sales),
-            _money(entry.value.quantity == 0 ? 0 : entry.value.sales / entry.value.quantity),
-          ]).toList(),
+          sorted
+              .map((entry) => [
+                    _displayName(entry.key),
+                    '${entry.value.quantity}',
+                    _money(entry.value.sales),
+                    _money(entry.value.quantity == 0
+                        ? 0
+                        : entry.value.sales / entry.value.quantity),
+                  ])
+              .toList(),
         ),
       ],
     );
@@ -184,7 +194,8 @@ class StoreReportingPdfService {
     required DateTime endDate,
     required List<HourlySale> rows,
   }) async {
-    final transactions = rows.fold<int>(0, (sum, row) => sum + row.transactionCount);
+    final transactions =
+        rows.fold<int>(0, (sum, row) => sum + row.transactionCount);
     final items = rows.fold<int>(0, (sum, row) => sum + row.itemCount);
     final sales = rows.fold<num>(0, (sum, row) => sum + row.totalSales);
 
@@ -202,12 +213,14 @@ class StoreReportingPdfService {
         _tableSection(
           'HOURLY SALES',
           const ['HOUR', 'TRANSACTIONS', 'ITEMS SOLD', 'TOTAL SALES'],
-          rows.map((row) => [
-            row.label,
-            '${row.transactionCount}',
-            '${row.itemCount}',
-            _money(row.totalSales),
-          ]).toList(),
+          rows
+              .map((row) => [
+                    row.label,
+                    '${row.transactionCount}',
+                    '${row.itemCount}',
+                    _money(row.totalSales),
+                  ])
+              .toList(),
         ),
       ],
     );
@@ -219,9 +232,12 @@ class StoreReportingPdfService {
     required DateTime endDate,
     required List<Map<String, dynamic>> rows,
   }) async {
-    num number(dynamic value) => value is num ? value : num.tryParse('$value') ?? 0;
-    final count = rows.fold<int>(0, (sum, row) => sum + number(row['paymentCount']).toInt());
-    final total = rows.fold<num>(0, (sum, row) => sum + number(row['totalAmount']));
+    num number(dynamic value) =>
+        value is num ? value : num.tryParse('$value') ?? 0;
+    final count = rows.fold<int>(
+        0, (sum, row) => sum + number(row['paymentCount']).toInt());
+    final total =
+        rows.fold<num>(0, (sum, row) => sum + number(row['totalAmount']));
 
     return _buildDocument(
       title: 'PAYMENT SUMMARY REPORT',
@@ -236,11 +252,13 @@ class StoreReportingPdfService {
         _tableSection(
           'PAYMENT SUMMARY',
           const ['PAYMENT METHOD', 'PAYMENTS', 'TOTAL PAID'],
-          rows.map((row) => [
-            '${row['paymentMethod'] ?? 'Unknown'}',
-            '${number(row['paymentCount']).toInt()}',
-            _money(number(row['totalAmount'])),
-          ]).toList(),
+          rows
+              .map((row) => [
+                    '${row['paymentMethod'] ?? 'Unknown'}',
+                    '${number(row['paymentCount']).toInt()}',
+                    _money(number(row['totalAmount'])),
+                  ])
+              .toList(),
         ),
       ],
     );
@@ -254,9 +272,11 @@ class StoreReportingPdfService {
     String search = '',
     String status = 'ALL',
   }) async {
-    num number(dynamic value) => value is num ? value : num.tryParse('$value') ?? 0;
+    num number(dynamic value) =>
+        value is num ? value : num.tryParse('$value') ?? 0;
     final total = rows.fold<num>(0, (sum, row) => sum + number(row['total']));
-    final items = rows.fold<int>(0, (sum, row) => sum + number(row['itemCount']).toInt());
+    final items =
+        rows.fold<int>(0, (sum, row) => sum + number(row['itemCount']).toInt());
 
     return _buildDocument(
       title: 'SALES TRANSACTIONS REPORT',
@@ -275,16 +295,26 @@ class StoreReportingPdfService {
       sections: [
         _tableSection(
           'TRANSACTIONS',
-          const ['REFERENCE', 'DATE', 'KIOSK', 'ITEMS', 'STATUS', 'PAYMENT', 'TOTAL'],
-          rows.map((row) => [
-            '${row['referenceNo'] ?? row['id'] ?? ''}',
-            '${row['dateValue'] ?? ''}',
-            '${row['deviceId'] ?? 'Kiosk'}',
-            '${row['itemCount'] ?? 0}',
-            '${row['status'] ?? ''}',
-            '${row['paymentMethod'] ?? ''}',
-            _money(number(row['total'])),
-          ]).toList(),
+          const [
+            'REFERENCE',
+            'DATE',
+            'KIOSK',
+            'ITEMS',
+            'STATUS',
+            'PAYMENT',
+            'TOTAL'
+          ],
+          rows
+              .map((row) => [
+                    '${row['referenceNo'] ?? row['id'] ?? ''}',
+                    '${row['dateValue'] ?? ''}',
+                    '${row['deviceId'] ?? 'Kiosk'}',
+                    '${row['itemCount'] ?? 0}',
+                    '${row['status'] ?? ''}',
+                    '${row['paymentMethod'] ?? ''}',
+                    _money(number(row['total'])),
+                  ])
+              .toList(),
         ),
       ],
     );
@@ -299,7 +329,7 @@ class StoreReportingPdfService {
     required List<_PdfSection> sections,
     List<String> filters = const [],
   }) async {
-    final pdf = pw.Document(title: 'Bigger Brew $title');
+    final pdf = pw.Document(title: ' $title');
     final theme = await StoreReportingPdfFont.theme();
     pdf.addPage(
       pw.MultiPage(
@@ -307,22 +337,32 @@ class StoreReportingPdfService {
         theme: theme,
         margin: const pw.EdgeInsets.all(28),
         build: (_) => [
-          pw.Text(title, style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+          pw.Text(title,
+              style:
+                  pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           pw.Text('Store: $storeId'),
-          pw.Text('Period: ${_date(startDate)}${_sameDay(startDate, endDate) ? '' : ' to ${_date(endDate)}'}'),
+          pw.Text(
+              'Period: ${_date(startDate)}${_sameDay(startDate, endDate) ? '' : ' to ${_date(endDate)}'}'),
           if (filters.isNotEmpty) ...[
             pw.SizedBox(height: 4),
-            pw.Text(filters.join('  •  '), style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+            pw.Text(filters.join('  •  '),
+                style:
+                    const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
           ],
           pw.SizedBox(height: 14),
-          pw.Table(border: pw.TableBorder.all(color: PdfColors.grey400), children: summary),
+          pw.Table(
+              border: pw.TableBorder.all(color: PdfColors.grey400),
+              children: summary),
           pw.SizedBox(height: 18),
           ...sections.expand((section) => [
-                pw.Text(section.title, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                pw.Text(section.title,
+                    style: pw.TextStyle(
+                        fontSize: 12, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 6),
                 if (section.rows.isEmpty)
-                  pw.Text('No data.', style: const pw.TextStyle(color: PdfColors.grey600))
+                  pw.Text('No data.',
+                      style: const pw.TextStyle(color: PdfColors.grey600))
                 else
                   pw.Table(
                     border: pw.TableBorder.all(color: PdfColors.grey300),
@@ -337,7 +377,8 @@ class StoreReportingPdfService {
                   ),
                 pw.SizedBox(height: 16),
               ]),
-          pw.Text('Generated from Store Management reporting data.', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+          pw.Text('Generated from Store Management reporting data.',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
         ],
       ),
     );
@@ -345,25 +386,35 @@ class StoreReportingPdfService {
   }
 
   static pw.TableRow _headerRow(List<String> headers) => pw.TableRow(
-        children: headers.map((header) => pw.Padding(
-          padding: const pw.EdgeInsets.all(5),
-          child: pw.Text(header, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
-        )).toList(),
+        children: headers
+            .map((header) => pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text(header,
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                ))
+            .toList(),
       );
 
   static pw.TableRow _dataTableRow(List<String> values) => pw.TableRow(
-        children: values.map((value) => pw.Padding(
-          padding: const pw.EdgeInsets.all(5),
-          child: pw.Text(value, style: const pw.TextStyle(fontSize: 8)),
-        )).toList(),
+        children: values
+            .map((value) => pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text(value, style: const pw.TextStyle(fontSize: 8)),
+                ))
+            .toList(),
       );
 
-  static pw.TableRow _summaryRow(String label, String value) => pw.TableRow(children: [
+  static pw.TableRow _summaryRow(String label, String value) =>
+      pw.TableRow(children: [
         pw.Padding(padding: const pw.EdgeInsets.all(7), child: pw.Text(label)),
-        pw.Padding(padding: const pw.EdgeInsets.all(7), child: pw.Text(value, textAlign: pw.TextAlign.right)),
+        pw.Padding(
+            padding: const pw.EdgeInsets.all(7),
+            child: pw.Text(value, textAlign: pw.TextAlign.right)),
       ]);
 
-  static _PdfSection _tableSection(String title, List<String> headers, List<List<String>> rows) =>
+  static _PdfSection _tableSection(
+          String title, List<String> headers, List<List<String>> rows) =>
       _PdfSection(title: title, headers: headers, rows: rows);
 
   static String _money(num value) => StoreCurrency.format(value);
@@ -371,23 +422,35 @@ class StoreReportingPdfService {
   static String _displayName(String value) {
     final normalized = value.trim().replaceAll(RegExp(r'[_-]+'), ' ');
     if (normalized.isEmpty) return 'Uncategorized';
-    return normalized.split(RegExp(r'\s+')).map((word) => word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}').join(' ');
+    return normalized
+        .split(RegExp(r'\s+'))
+        .map((word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+        .join(' ');
   }
 
-  static String _date(DateTime value) => '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
+  static String _date(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 
-  static bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+  static bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 class _PdfSection {
-  const _PdfSection({required this.title, required this.headers, required this.rows});
+  const _PdfSection(
+      {required this.title, required this.headers, required this.rows});
   final String title;
   final List<String> headers;
   final List<List<String>> rows;
 }
 
 class _ProductTotal {
-  const _ProductTotal({required this.name, required this.category, required this.quantity, required this.sales});
+  const _ProductTotal(
+      {required this.name,
+      required this.category,
+      required this.quantity,
+      required this.sales});
   final String name;
   final String category;
   final int quantity;

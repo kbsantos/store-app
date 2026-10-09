@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: user/role hardening
+--  Store Management: user/role hardening
 --
 -- Role model:
 --   owner  : full control, including assigning admin/owner and database reset

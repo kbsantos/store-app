@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: Sales Reporting Center Phase 3
+--  Store Management: Sales Reporting Center Phase 3
 --
 -- Adds read-only report contracts for:
 --   1. Discounts & Charges

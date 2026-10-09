@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: publish Auto Apply to kiosk master reads
+--  Store Management: publish Auto Apply to kiosk master reads
 -- The Store Management catalog already persists auto_apply. This migration
 -- completes the shared master contract consumed by kiosk get_store_catalog().
 

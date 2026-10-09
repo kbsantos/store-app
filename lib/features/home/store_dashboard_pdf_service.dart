@@ -18,7 +18,7 @@ class StoreDashboardPdfService {
     required List<ReportingDeviceSale> devices,
     required num payments,
   }) async {
-    final pdf = pw.Document(title: 'Bigger Brew Store Dashboard');
+    final pdf = pw.Document(title: ' Store Dashboard');
     final theme = await StoreReportingPdfFont.theme();
     final topProducts = [...products]
       ..sort((a, b) => b.totalSales.compareTo(a.totalSales));
@@ -50,12 +50,13 @@ class StoreDashboardPdfService {
         margin: const pw.EdgeInsets.all(28),
         build: (context) => [
           pw.Text(
-            'BIGGER BREW STORE DASHBOARD',
+            ' STORE DASHBOARD',
             style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 6),
           pw.Text('Store: $storeId'),
-          pw.Text('Period: ${_date(startDate)}${_sameDay(startDate, endDate) ? '' : ' to ${_date(endDate)}'}'),
+          pw.Text(
+              'Period: ${_date(startDate)}${_sameDay(startDate, endDate) ? '' : ' to ${_date(endDate)}'}'),
           pw.SizedBox(height: 16),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey400),
@@ -67,29 +68,47 @@ class StoreDashboardPdfService {
             ],
           ),
           pw.SizedBox(height: 18),
-          _section('TOP PRODUCTS', topProducts.take(10).map((row) => _dataRow(
-                _displayName(row.productName),
-                '${row.quantitySold} sold',
-                _money(row.totalSales),
-              )).toList()),
+          _section(
+              'TOP PRODUCTS',
+              topProducts
+                  .take(10)
+                  .map((row) => _dataRow(
+                        _displayName(row.productName),
+                        '${row.quantitySold} sold',
+                        _money(row.totalSales),
+                      ))
+                  .toList()),
           pw.SizedBox(height: 14),
-          _section('CATEGORY SALES', topCategories.take(10).map((row) => _dataRow(
-                _displayName(row.category),
-                '${row.quantitySold} items',
-                _money(row.totalSales),
-              )).toList()),
+          _section(
+              'CATEGORY SALES',
+              topCategories
+                  .take(10)
+                  .map((row) => _dataRow(
+                        _displayName(row.category),
+                        '${row.quantitySold} items',
+                        _money(row.totalSales),
+                      ))
+                  .toList()),
           pw.SizedBox(height: 14),
-          _section('KIOSK SALES', _groupDevices(devices).map((row) => _dataRow(
-                row.name,
-                '${row.orders} orders',
-                _money(row.sales),
-              )).toList()),
+          _section(
+              'KIOSK SALES',
+              _groupDevices(devices)
+                  .map((row) => _dataRow(
+                        row.name,
+                        '${row.orders} orders',
+                        _money(row.sales),
+                      ))
+                  .toList()),
           pw.SizedBox(height: 14),
-          _section('DAILY SALES', daily.map((row) => _dataRow(
-                _date(row.salesDate),
-                '${row.transactionCount} orders',
-                _money(row.totalSales),
-              )).toList()),
+          _section(
+              'DAILY SALES',
+              daily
+                  .map((row) => _dataRow(
+                        _date(row.salesDate),
+                        '${row.transactionCount} orders',
+                        _money(row.totalSales),
+                      ))
+                  .toList()),
           pw.SizedBox(height: 18),
           pw.Text(
             'Generated from Store Management reporting data.',
@@ -103,7 +122,8 @@ class StoreDashboardPdfService {
 
   static pw.TableRow _summaryRow(String label, String value) => pw.TableRow(
         children: [
-          pw.Padding(padding: const pw.EdgeInsets.all(7), child: pw.Text(label)),
+          pw.Padding(
+              padding: const pw.EdgeInsets.all(7), child: pw.Text(label)),
           pw.Padding(
             padding: const pw.EdgeInsets.all(7),
             child: pw.Text(value, textAlign: pw.TextAlign.right),
@@ -114,24 +134,39 @@ class StoreDashboardPdfService {
   static pw.Widget _section(String title, List<pw.TableRow> rows) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
-          pw.Text(title, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+          pw.Text(title,
+              style:
+                  pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 5),
           if (rows.isEmpty)
-            pw.Text('No data.', style: const pw.TextStyle(color: PdfColors.grey600))
+            pw.Text('No data.',
+                style: const pw.TextStyle(color: PdfColors.grey600))
           else
             pw.Table(
-              border: pw.TableBorder(bottom: pw.BorderSide(color: PdfColors.grey300)),
-              columnWidths: const {0: pw.FlexColumnWidth(4), 1: pw.FlexColumnWidth(1.5), 2: pw.FlexColumnWidth(1.5)},
+              border: pw.TableBorder(
+                  bottom: pw.BorderSide(color: PdfColors.grey300)),
+              columnWidths: const {
+                0: pw.FlexColumnWidth(4),
+                1: pw.FlexColumnWidth(1.5),
+                2: pw.FlexColumnWidth(1.5)
+              },
               children: rows,
             ),
         ],
       );
 
-  static pw.TableRow _dataRow(String title, String detail, String amount) => pw.TableRow(
+  static pw.TableRow _dataRow(String title, String detail, String amount) =>
+      pw.TableRow(
         children: [
-          pw.Padding(padding: const pw.EdgeInsets.symmetric(vertical: 5), child: pw.Text(title)),
-          pw.Padding(padding: const pw.EdgeInsets.symmetric(vertical: 5), child: pw.Text(detail, textAlign: pw.TextAlign.right)),
-          pw.Padding(padding: const pw.EdgeInsets.symmetric(vertical: 5), child: pw.Text(amount, textAlign: pw.TextAlign.right)),
+          pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(vertical: 5),
+              child: pw.Text(title)),
+          pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(vertical: 5),
+              child: pw.Text(detail, textAlign: pw.TextAlign.right)),
+          pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(vertical: 5),
+              child: pw.Text(amount, textAlign: pw.TextAlign.right)),
         ],
       );
 
@@ -142,7 +177,8 @@ class StoreDashboardPdfService {
       final existing = grouped[key];
       grouped[key] = existing == null
           ? _DeviceSummary(key, row.transactionCount, row.totalSales)
-          : _DeviceSummary(key, existing.orders + row.transactionCount, existing.sales + row.totalSales);
+          : _DeviceSummary(key, existing.orders + row.transactionCount,
+              existing.sales + row.totalSales);
     }
     final rows = grouped.values.toList()
       ..sort((a, b) => b.sales.compareTo(a.sales));
@@ -158,7 +194,8 @@ class StoreDashboardPdfService {
     }).join(' ');
   }
 
-  static String _money(num value) => '${StoreCurrency.code} ${StoreCurrency.format(value).substring(StoreCurrency.symbol.length)}';
+  static String _money(num value) =>
+      '${StoreCurrency.code} ${StoreCurrency.format(value).substring(StoreCurrency.symbol.length)}';
 
   static String _date(DateTime value) =>
       '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';

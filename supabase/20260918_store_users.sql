@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: employees and roles
+--  Store Management: employees and roles
 -- Employees must already exist in Supabase Auth. This migration does not create passwords.
 
 create table if not exists public.store_employee_profiles (

@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: runtime fix for current-catalog category reporting.
+--  Store Management: runtime fix for current-catalog category reporting.
 --
 -- Root cause:
 -- The current-catalog reporting views were created with

@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: device administration
+--  Store Management: device administration
 -- Kiosks use the existing public.devices table created by the kiosk/reporting schema.
 -- Printers are store-managed configuration records and may optionally be assigned to a kiosk.
 

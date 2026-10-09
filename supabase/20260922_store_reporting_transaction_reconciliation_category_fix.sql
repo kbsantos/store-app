@@ -1,4 +1,4 @@
--- Bigger Brew Store Management: category visibility fix for reconciled sales reports.
+--  Store Management: category visibility fix for reconciled sales reports.
 --
 -- The transaction reconciliation migration correctly made transactions.total the
 -- financial authority, but its product/category views were created with
